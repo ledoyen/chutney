@@ -86,7 +86,7 @@
                         <executable>true</executable>
                         <layout>ZIP</layout>
                         <mainClass>${mainClass}</mainClass>
-                        <finalName>chutney-local-dev-${project.version}</finalName>
+                        <finalName>chutney-${project.artifactId}-${project.version}</finalName>
                     </configuration>
                     <executions>
                         <execution>
