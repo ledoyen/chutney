@@ -12,8 +12,9 @@ jdk: openjdk8
 install: skip
 
 script:
-  - "mvn -B -V -P node_install verify"
-  - 'MVN_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression="project.version" -q -DforceStdout) && echo $MAVEN_VERSION'
+  - export MVN_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression="project.version" -q -DforceStdout)
+  - echo "MVN_VERSION ${MVN_VERSION} - TRAVIS_TAG ${TRAVIS_BRANCH} - TRAVIS_BRANCH ${TRAVIS_BRANCH}"
+  - - "mvn -B -V -P node_install verify"
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
@@ -30,7 +31,7 @@ deploy:
       repo: chutney-testing/chutney
       all_branches: true
       tags: true
-      condition: $MVN_VERSION = $TRAVIS_TAG && $TRAVIS_BRANCH =~ ^master|\d+\.\d+(\.\d+)?(-\S*)?$
+      condition: $MVN_VERSION = $TRAVIS_TAG
 
   - provider: releases
     skip_cleanup: true
@@ -41,4 +42,4 @@ deploy:
       repo: chutney-testing/chutney
       all_branches: true
       tags: true
-      condition: $MVN_VERSION = $TRAVIS_TAG && $TRAVIS_BRANCH =~ ^master|\d+\.\d+(\.\d+)?(-\S*)?$
+      condition: $MVN_VERSION = $TRAVIS_TAG
