@@ -19,9 +19,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -90,6 +93,21 @@ public class DatabaseTestCaseRepository implements DelegateScenarioRepository {
         }
     }
 
+    @Override
+    public List<TestCaseMetadata> search(String textFilter) {
+        if(!textFilter.isEmpty()) {
+            String[] words =  StringEscapeUtils.escapeSql(textFilter).split("\\s");
+            String sqlSearch = Arrays.stream(words).map(w -> " CONTENT LIKE '%" + w + "%' ").collect(Collectors.joining(" AND "));
+            return uiNamedParameterJdbcTemplate.query(
+                "SELECT ID, TITLE, DESCRIPTION, TAGS, CREATION_DATE, USER_ID, UPDATE_DATE, VERSION " +
+                    "FROM SCENARIO " +
+                    "WHERE ACTIVATED is TRUE " +
+                    "AND " + sqlSearch, emptyMap(), SCENARIO_INDEX_ROW_MAPPER);
+        } else {
+            return findAll();
+        }
+    }
+
     private boolean isNewScenario(TestCaseData scenario) {
         return scenario.id == null || uiNamedParameterJdbcTemplate.queryForObject("SELECT COUNT(ID) FROM SCENARIO WHERE ID = :id", buildIdParameterMap(scenario.id), int.class) == 0;
     }
@@ -120,7 +138,7 @@ public class DatabaseTestCaseRepository implements DelegateScenarioRepository {
                 .addValue("dataSet", mapper.writeValueAsString(scenario.executionParameters))
                 .addValue("content", scenario.rawScenario)
                 .addValue("creationDate", Date.from(scenario.creationDate))
-                .addValue("tags", ScenarioTagListMapper.tagsListToString(scenario.tags))
+                .addValue("tags", TagListMapper.tagsListToString(scenario.tags))
                 .addValue("author", User.isAnonymous(scenario.author) ? null : scenario.author)
                 .addValue("version", scenario.version)
         ).runtime();
@@ -133,7 +151,7 @@ public class DatabaseTestCaseRepository implements DelegateScenarioRepository {
             String title = rs.getString("TITLE");
             String description = rs.getString("DESCRIPTION");
             Timestamp creationDate = rs.getTimestamp("CREATION_DATE");
-            List<String> tags = ScenarioTagListMapper.tagsStringToList(rs.getString("TAGS"));
+            List<String> tags = TagListMapper.tagsStringToList(rs.getString("TAGS"));
             String author = rs.getString("USER_ID");
             Timestamp updateDate = rs.getTimestamp("UPDATE_DATE");
             Integer version = rs.getInt("VERSION");
@@ -164,13 +182,14 @@ public class DatabaseTestCaseRepository implements DelegateScenarioRepository {
                 .withId(rs.getString("ID"))
                 .withTitle(rs.getString("TITLE"))
                 .withDescription(rs.getString("DESCRIPTION"))
-                .withTags(ScenarioTagListMapper.tagsStringToList(rs.getString("TAGS")))
+                .withTags(TagListMapper.tagsStringToList(rs.getString("TAGS")))
                 .withRawScenario(rs.getString("CONTENT"))
                 .withAuthor(rs.getString("USER_ID"))
                 .withVersion(rs.getInt("VERSION"));
 
-            Try.exec(() ->  {
-                TypeReference<Map<String, String>> typeRef = new TypeReference<Map<String, String>>() {};
+            Try.exec(() -> {
+                TypeReference<Map<String, String>> typeRef = new TypeReference<>() {
+                };
                 String executionParameters = rs.getString("DATASET");
                 return testCaseDataBuilder.withExecutionParameters(mapper.readValue(executionParameters != null ? executionParameters : "{}", typeRef));
             }).runtime();

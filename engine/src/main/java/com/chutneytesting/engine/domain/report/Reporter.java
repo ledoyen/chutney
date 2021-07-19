@@ -1,6 +1,7 @@
 package com.chutneytesting.engine.domain.report;
 
 
+import static com.chutneytesting.engine.domain.execution.report.Status.PAUSED;
 import static com.chutneytesting.engine.domain.execution.report.Status.RUNNING;
 
 import com.chutneytesting.engine.domain.execution.RxBus;
@@ -35,8 +36,8 @@ public class Reporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(Reporter.class);
     private static final long DEFAULT_RETENTION_DELAY_SECONDS = 5;
 
-    private Map<Long, Subject<StepExecutionReport>> reportsPublishers = new ConcurrentHashMap<>();
-    private Map<Long, Step> rootSteps = new ConcurrentHashMap<>();
+    private final Map<Long, Subject<StepExecutionReport>> reportsPublishers = new ConcurrentHashMap<>();
+    private final Map<Long, Step> rootSteps = new ConcurrentHashMap<>();
     private long retentionDelaySeconds;
 
     public Reporter() {
@@ -89,7 +90,15 @@ public class Reporter {
     }
 
     private StepExecutionReport generateRunningReport(long executionId) {
-        return generateReport(rootSteps.get(executionId), s -> RUNNING);
+        final Status calculatedRootStepStatus = rootSteps.get(executionId).status();
+
+        final Status finalStatus;
+        if(!calculatedRootStepStatus.equals(RUNNING) && !calculatedRootStepStatus.equals(PAUSED)) {
+            finalStatus = RUNNING;
+        } else {
+            finalStatus = calculatedRootStepStatus;
+        }
+        return generateReport(rootSteps.get(executionId), s -> finalStatus);
     }
 
     private StepExecutionReport generateLastReport(long executionId) {

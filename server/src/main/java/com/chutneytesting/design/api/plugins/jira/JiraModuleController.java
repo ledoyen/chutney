@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,17 +37,20 @@ public class JiraModuleController {
         this.jiraXrayPlugin = jiraXrayPlugin;
     }
 
-    @GetMapping(path = BASE_SCENARIO_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('SCENARIO_READ') or hasAuthority('CAMPAIGN_WRITE')")
+    @GetMapping(path = BASE_SCENARIO_URL, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, String> getLinkedScenarios() {
         return jiraRepository.getAllLinkedScenarios();
     }
 
-    @GetMapping(path = BASE_CAMPAIGN_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_READ')")
+    @GetMapping(path = BASE_CAMPAIGN_URL, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, String> getLinkedCampaigns() {
         return jiraRepository.getAllLinkedCampaigns();
     }
 
-    @GetMapping(path = BASE_SCENARIO_URL + "/{scenarioId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('SCENARIO_WRITE')")
+    @GetMapping(path = BASE_SCENARIO_URL + "/{scenarioId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public JiraDto getByScenarioId(@PathVariable String scenarioId) {
         String jiraId = jiraRepository.getByScenarioId(scenarioId);
         return ImmutableJiraDto.builder()
@@ -55,9 +59,10 @@ public class JiraModuleController {
             .build();
     }
 
+    @PreAuthorize("hasAuthority('SCENARIO_WRITE')")
     @PostMapping(path = BASE_SCENARIO_URL,
-        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public JiraDto saveForScenario(@RequestBody JiraDto jiraDto) {
         jiraRepository.saveForScenario(jiraDto.chutneyId(), jiraDto.id());
         return ImmutableJiraDto.builder()
@@ -66,13 +71,15 @@ public class JiraModuleController {
             .build();
     }
 
+    @PreAuthorize("hasAuthority('SCENARIO_WRITE')")
     @DeleteMapping(path = BASE_SCENARIO_URL + "/{scenarioId}")
     public void removeForScenario(@PathVariable String scenarioId) {
         jiraRepository.removeForScenario(scenarioId);
     }
 
 
-    @GetMapping(path = BASE_CAMPAIGN_URL + "/{campaignId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_READ')")
+    @GetMapping(path = BASE_CAMPAIGN_URL + "/{campaignId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public JiraDto getByCampaignId(@PathVariable String campaignId) {
         String jiraId = jiraRepository.getByCampaignId(campaignId);
         return ImmutableJiraDto.builder()
@@ -81,7 +88,8 @@ public class JiraModuleController {
             .build();
     }
 
-    @GetMapping(path = BASE_TEST_EXEC_URL + "/{testExecId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_WRITE')")
+    @GetMapping(path = BASE_TEST_EXEC_URL + "/{testExecId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> getScenariosByCampaignIg(@PathVariable String testExecId) {
         if(testExecId.isEmpty())
             return new ArrayList<>();
@@ -92,13 +100,14 @@ public class JiraModuleController {
         return allLinkedScenarios.entrySet()
             .stream()
             .filter(entry -> testExecScenariosId.contains(entry.getValue()))
-            .map(entry ->entry.getKey()
+            .map(Map.Entry::getKey
             ).collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasAuthority('CAMPAIGN_WRITE')")
     @PostMapping(path = BASE_CAMPAIGN_URL,
-        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public JiraDto saveForCampaign(@RequestBody JiraDto jiraDto) {
         jiraRepository.saveForCampaign(jiraDto.chutneyId(), jiraDto.id());
         return ImmutableJiraDto.builder()
@@ -107,12 +116,14 @@ public class JiraModuleController {
             .build();
     }
 
+    @PreAuthorize("hasAuthority('CAMPAIGN_WRITE')")
     @DeleteMapping(path = BASE_CAMPAIGN_URL + "/{campaignId}")
     public void removeForCampaign(@PathVariable String campaignId) {
         jiraRepository.removeForCampaign(campaignId);
     }
 
-    @GetMapping(path = BASE_CONFIGURATION_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('ADMIN_ACCESS')")
+    @GetMapping(path = BASE_CONFIGURATION_URL, produces = MediaType.APPLICATION_JSON_VALUE)
     public JiraConfigurationDto getConfiguration() {
         JiraTargetConfiguration jiraTargetConfiguration = jiraRepository.loadServerConfiguration();
         return ImmutableJiraConfigurationDto.builder()
@@ -122,9 +133,17 @@ public class JiraModuleController {
             .build();
     }
 
+    @PreAuthorize("hasAuthority('SCENARIO_READ') or hasAuthority('CAMPAIGN_READ')")
+    @GetMapping(path = BASE_CONFIGURATION_URL + "/url", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getConfigurationUrl() {
+        JiraTargetConfiguration jiraTargetConfiguration = jiraRepository.loadServerConfiguration();
+        return jiraTargetConfiguration.url;
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN_ACCESS')")
     @PostMapping(path = BASE_CONFIGURATION_URL,
-        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public void saveConfiguration(@RequestBody JiraConfigurationDto jiraConfigurationDto) {
         jiraRepository.saveServerConfiguration(new JiraTargetConfiguration(jiraConfigurationDto.url(), jiraConfigurationDto.username(), jiraConfigurationDto.password()));
     }

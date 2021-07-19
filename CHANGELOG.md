@@ -1,5 +1,256 @@
 # Changelog
 
+## [1.3.11](https://github.com/chutney-testing/chutney/tree/1.3.11) (2021-07-19)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.10...HEAD)
+
+**Fixed bugs:**
+
+- 🐛 | Links to JIRA are not working [\#508](https://github.com/chutney-testing/chutney/issues/508)
+
+**Merged pull requests:**
+
+- fix\(server+ui\): JIRA configuration url endpoint produces plain text [\#509](https://github.com/chutney-testing/chutney/pull/509) ([boddissattva](https://github.com/boddissattva))
+
+
+## [1.3.10](https://github.com/chutney-testing/chutney/tree/1.3.10) (2021-07-13)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.9...HEAD)
+
+**Fixed bugs:**
+
+- 🐛 | LDAP authentification problem - Authorities have role prefix ROLE\_ [\#506](https://github.com/chutney-testing/chutney/issues/506)
+- 🐛 | Execute button of scenario does not work [\#505](https://github.com/chutney-testing/chutney/issues/505)
+
+**Merged pull requests:**
+
+- fix/scenario execute UI [\#507](https://github.com/chutney-testing/chutney/pull/507) ([boddissattva](https://github.com/boddissattva))
+
+
+## [1.3.9](https://github.com/chutney-testing/chutney/tree/1.3.9) (2021-07-12)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.8...HEAD)
+
+**Implemented enhancements:**
+
+- 🚀 | JSON assert : JSONPath with selector returns array problem with placeholder [\#344](https://github.com/chutney-testing/chutney/issues/344)
+- 🚀 | Add full scenario text research on scenario page [\#331](https://github.com/chutney-testing/chutney/issues/331)
+- 🚀 | Add authorization management [\#95](https://github.com/chutney-testing/chutney/issues/95)
+
+**Fixed bugs:**
+
+- 🐛 | soft strategy with validation should be in error [\#502](https://github.com/chutney-testing/chutney/issues/502)
+- 🐛 | UI lags on complex component testcases [\#494](https://github.com/chutney-testing/chutney/issues/494)
+- 🐛 | Datasets : search filter clear button is not working [\#481](https://github.com/chutney-testing/chutney/issues/481)
+- 🐛 | Chutney logo on login page unresolved when logout [\#480](https://github.com/chutney-testing/chutney/issues/480)
+- 🐛 | Wrong configuration folder during tests [\#460](https://github.com/chutney-testing/chutney/issues/460)
+- 🐛 | core\_unit\_tests run configuration also run core\_integration\_tests [\#402](https://github.com/chutney-testing/chutney/issues/402)
+- 🐛 | No error message when wrong login [\#338](https://github.com/chutney-testing/chutney/issues/338)
+
+**Closed issues:**
+
+- Out of memory on big SQL result [\#69](https://github.com/chutney-testing/chutney/issues/69)
+
+**Merged pull requests:**
+
+- fix\(egine\): Validations only set FAILURE step status [\#504](https://github.com/chutney-testing/chutney/pull/504) ([boddissattva](https://github.com/boddissattva))
+- fix\(ui\): Map deselect all event on angular-multiselect [\#497](https://github.com/chutney-testing/chutney/pull/497) ([boddissattva](https://github.com/boddissattva))
+- fix\(junit\): Use class filter in junit engine [\#496](https://github.com/chutney-testing/chutney/pull/496) ([boddissattva](https://github.com/boddissattva))
+- chore\(ui+server\): Load independently testcase header and content [\#493](https://github.com/chutney-testing/chutney/pull/493) ([boddissattva](https://github.com/boddissattva))
+- chore\(deps-dev\): bump assertj-core from 3.19.0 to 3.20.2 [\#491](https://github.com/chutney-testing/chutney/pull/491) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps\): bump sl4j.api.version from 1.7.30 to 1.7.31 [\#490](https://github.com/chutney-testing/chutney/pull/490) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps-dev\): bump mockito.version from 3.10.0 to 3.11.2 [\#489](https://github.com/chutney-testing/chutney/pull/489) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps\): bump commons-io from 2.8.0 to 2.10.0 [\#487](https://github.com/chutney-testing/chutney/pull/487) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps\): bump maven-javadoc-plugin from 3.2.0 to 3.3.0 [\#485](https://github.com/chutney-testing/chutney/pull/485) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps-dev\): bump otj-pg-embedded from 0.13.1 to 0.13.4 [\#484](https://github.com/chutney-testing/chutney/pull/484) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps\): bump qpid-broker.version from 7.0.6 to 8.0.5 [\#483](https://github.com/chutney-testing/chutney/pull/483) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Feat/authorizations [\#477](https://github.com/chutney-testing/chutney/pull/477) ([boddissattva](https://github.com/boddissattva))
+
+## [1.3.8](https://github.com/chutney-testing/chutney/tree/1.3.8) (2021-06-23)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.7...HEAD)
+
+**Implemented enhancements:**
+
+- 🚀 | Include jira link in backup [\#458](https://github.com/chutney-testing/chutney/issues/458)
+- 🚀 | Add research full text in scenario [\#397](https://github.com/chutney-testing/chutney/issues/397)
+- 🚀 | Add global variables support to new ui [\#390](https://github.com/chutney-testing/chutney/issues/390)
+
+**Fixed bugs:**
+
+- 🐛 | SQL task - mapping and print errors when having 2 or more column with same header [\#478](https://github.com/chutney-testing/chutney/issues/478)
+- 🐛 | Pause button doesnt appear anymore [\#476](https://github.com/chutney-testing/chutney/issues/476)
+- 🐛 | SQL client change [\#470](https://github.com/chutney-testing/chutney/issues/470)
+- 🐛 | Regression in scenario execution [\#469](https://github.com/chutney-testing/chutney/issues/469)
+- 🐛 | Random classnotfound exeception [\#466](https://github.com/chutney-testing/chutney/issues/466)
+- 🚀 | Missing dataset data in git export [\#461](https://github.com/chutney-testing/chutney/issues/461)
+- 🐛 | Environment backup [\#457](https://github.com/chutney-testing/chutney/issues/457)
+- 🐛 | Navigation to scenario components is broken [\#434](https://github.com/chutney-testing/chutney/issues/434)
+
+**Merged pull requests:**
+
+- fix\(task\): SQL result with duplicated column name [\#479](https://github.com/chutney-testing/chutney/pull/479) ([bessonm](https://github.com/bessonm))
+- bugfix\(engine\): Add pause as report status for running scenario [\#475](https://github.com/chutney-testing/chutney/pull/475) ([nbrouand](https://github.com/nbrouand))
+- fix\(server\): Backup all environments [\#474](https://github.com/chutney-testing/chutney/pull/474) ([bessonm](https://github.com/bessonm))
+- fix\(server\): Includes datatable & constants on exporting dataset to git [\#473](https://github.com/chutney-testing/chutney/pull/473) ([bessonm](https://github.com/bessonm))
+- feat\(ui+server\): Backup jira links [\#472](https://github.com/chutney-testing/chutney/pull/472) ([bessonm](https://github.com/bessonm))
+- Bugfix/sql task change [\#471](https://github.com/chutney-testing/chutney/pull/471) ([nbrouand](https://github.com/nbrouand))
+- fix\(task-impl\): Keep numeric and date JDBC SQL Types in task result [\#468](https://github.com/chutney-testing/chutney/pull/468) ([boddissattva](https://github.com/boddissattva))
+- Chore/taskexecutor [\#467](https://github.com/chutney-testing/chutney/pull/467) ([nbrouand](https://github.com/nbrouand))
+- feat\(ui+server\): Add full text scenario search [\#465](https://github.com/chutney-testing/chutney/pull/465) ([nbrouand](https://github.com/nbrouand))
+
+
+## [1.3.7](https://github.com/chutney-testing/chutney/tree/1.3.7) (2021-06-09)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.6...HEAD)
+
+**Fixed bugs:**
+
+- 🐛 | When setting Xms on Chutney, SQL task always raise NotEnoughMemoryException [\#463](https://github.com/chutney-testing/chutney/issues/463)
+
+**Merged pull requests:**
+
+- bugfix\(engine+tools\): Fix memory check on sql task. Should not use co… [\#464](https://github.com/chutney-testing/chutney/pull/464) ([nbrouand](https://github.com/nbrouand))
+
+
+## [1.3.6](https://github.com/chutney-testing/chutney/tree/1.3.6) (2021-06-08)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.5...1.3.6)
+
+**Implemented enhancements:**
+
+- 🚀 | Chutney working directory configuration [\#437](https://github.com/chutney-testing/chutney/issues/437)
+
+**Fixed bugs:**
+
+- 🐛 | Empty campaign execution user [\#454](https://github.com/chutney-testing/chutney/issues/454)
+- 🐛 | Empty tag on component scenarios [\#441](https://github.com/chutney-testing/chutney/issues/441)
+- 🐛 | Component's validations list keeps adding empty validations [\#439](https://github.com/chutney-testing/chutney/issues/439)
+
+**Merged pull requests:**
+
+- feat\(task\) : Prevent OOM on large SQL queries [\#462](https://github.com/chutney-testing/chutney/pull/462) ([bessonm](https://github.com/bessonm))
+- bugfix\(ui\): fix empty campaign execution user [\#455](https://github.com/chutney-testing/chutney/pull/455) ([rbenyoussef](https://github.com/rbenyoussef))
+- chore\(deps\): bump junit5.version from 5.7.1 to 5.7.2 [\#453](https://github.com/chutney-testing/chutney/pull/453) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps-dev\): bump mockito-core from 2.8.9 to 3.10.0 [\#452](https://github.com/chutney-testing/chutney/pull/452) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps\): bump exec-maven-plugin from 1.6.0 to 3.0.0 [\#451](https://github.com/chutney-testing/chutney/pull/451) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps\): bump jacoco-maven-plugin from 0.8.5 to 0.8.7 [\#450](https://github.com/chutney-testing/chutney/pull/450) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps\): bump cxf-xjc-plugin from 3.3.0 to 3.3.1 [\#448](https://github.com/chutney-testing/chutney/pull/448) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore\(deps\): bump everit-json-schema from 1.11.0 to 1.12.2 [\#444](https://github.com/chutney-testing/chutney/pull/444) ([dependabot[bot]](https://github.com/apps/dependabot))
+- chore: Upgrade selenium version to 3.141.59 [\#443](https://github.com/chutney-testing/chutney/pull/443) ([rbenyoussef](https://github.com/rbenyoussef))
+- bugfix\(server\): Prevent creating empty tags [\#442](https://github.com/chutney-testing/chutney/pull/442) ([bessonm](https://github.com/bessonm))
+- bugfix\(ui\): Reset component validations list when selecting another one [\#440](https://github.com/chutney-testing/chutney/pull/440) ([bessonm](https://github.com/bessonm))
+- chore\(\): Single chutney working directory configuration [\#436](https://github.com/chutney-testing/chutney/pull/436) ([boddissattva](https://github.com/boddissattva))
+
+## [1.3.5](https://github.com/chutney-testing/chutney/tree/1.3.5) (2021-05-25)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.4...1.3.5)
+
+**Merged pull requests:**
+
+- bugfix\(task-impl\): fix NPE on null sql result column [\#438](https://github.com/chutney-testing/chutney/pull/438) ([rbenyoussef](https://github.com/rbenyoussef))
+
+
+## [1.3.4](https://github.com/chutney-testing/chutney/tree/1.3.4)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.3...1.3.4)
+
+**Implemented enhancements:**
+
+- 🚀 | Search campaign more easily [\#355](https://github.com/chutney-testing/chutney/issues/355)
+
+**Fixed bugs:**
+
+- 🐛 | Cannot edit component since 1.3.3 [\#433](https://github.com/chutney-testing/chutney/issues/433)
+
+**Merged pull requests:**
+
+- bugfix\(ui\): Fix component & scenario edition [\#435](https://github.com/chutney-testing/chutney/pull/435) ([bessonm](https://github.com/bessonm))
+- chore: Add maven badge [\#432](https://github.com/chutney-testing/chutney/pull/432) ([nbrouand](https://github.com/nbrouand))
+- feat\(ui+server\): add tags for campaigns [\#431](https://github.com/chutney-testing/chutney/pull/431) ([rbenyoussef](https://github.com/rbenyoussef))
+
+
+## [1.3.3](https://github.com/chutney-testing/chutney/tree/1.3.3)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.2...1.3.3)
+
+**Implemented enhancements:**
+
+- Enhance read-only scenario with parameters [\#158](https://github.com/chutney-testing/chutney/issues/158)
+
+**Fixed bugs:**
+
+- 🐛 |  Cannot load home page [\#429](https://github.com/chutney-testing/chutney/issues/429)
+
+**Merged pull requests:**
+
+- bugfix\(server\): Fix home page serialization [\#430](https://github.com/chutney-testing/chutney/pull/430) ([nbrouand](https://github.com/nbrouand))
+- 🚀 feat\(tasks\): Pretty print SQL tasks results for execution reports [\#428](https://github.com/chutney-testing/chutney/pull/428) ([bessonm](https://github.com/bessonm))
+- feat\(server+ui\): Evaluate parameters for reading scenario [\#427](https://github.com/chutney-testing/chutney/pull/427) ([nbrouand](https://github.com/nbrouand))
+
+
+## [1.3.2](https://github.com/chutney-testing/chutney/tree/1.3.2)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.1...1.3.2)
+
+**Implemented enhancements:**
+
+- 🚀 | Add navigation between component [\#332](https://github.com/chutney-testing/chutney/issues/332)
+- 🚀 | Show line count on matrix dataset \(csv\) [\#211](https://github.com/chutney-testing/chutney/issues/211)
+- 🚀 | Display total scenario count on campaign page [\#206](https://github.com/chutney-testing/chutney/issues/206)
+
+**Closed issues:**
+
+- 🚀 | Migrate to maven central [\#328](https://github.com/chutney-testing/chutney/issues/328)
+
+**Merged pull requests:**
+
+- feat\(ui\):display total scenarios count on campaign page [\#426](https://github.com/chutney-testing/chutney/pull/426) ([amalmtt](https://github.com/amalmtt))
+- feat\(ui\): Add navigation between components [\#408](https://github.com/chutney-testing/chutney/pull/408) ([rbenyoussef](https://github.com/rbenyoussef))
+- Upgrade to GitHub-native Dependabot [\#407](https://github.com/chutney-testing/chutney/pull/407) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+- feat\(ui\): show line count on matrix dataset [\#406](https://github.com/chutney-testing/chutney/pull/406) ([rbenyoussef](https://github.com/rbenyoussef))
+- chore: upgrade spring boot version [\#405](https://github.com/chutney-testing/chutney/pull/405) ([nbrouand](https://github.com/nbrouand))
+- chore: Release to maven central [\#404](https://github.com/chutney-testing/chutney/pull/404) ([bessonm](https://github.com/bessonm))
+- feat\(engine\): Add finally action in report [\#403](https://github.com/chutney-testing/chutney/pull/403) ([nbrouand](https://github.com/nbrouand))
+- Feat/git export [\#394](https://github.com/chutney-testing/chutney/pull/394) ([bessonm](https://github.com/bessonm))
+
+
+## [1.3.1](https://github.com/chutney-testing/chutney/tree/1.3.1) (2021-04-22)
+
+[Full Changelog](https://github.com/chutney-testing/chutney/compare/1.3.0...1.3.1)
+
+**Implemented enhancements:**
+
+- 🚀 | Create a smart git export of all Chutney data [\#342](https://github.com/chutney-testing/chutney/issues/342)
+- 🚀 | Improve campaign scheduling [\#330](https://github.com/chutney-testing/chutney/issues/330)
+- 🚀 | Allow assertions directly in task [\#303](https://github.com/chutney-testing/chutney/issues/303)
+- 🚀 | Report does not contain finally actions execution [\#302](https://github.com/chutney-testing/chutney/issues/302)
+
+**Fixed bugs:**
+
+- 🐛 | tastk-impl project in in dependency of engine project [\#400](https://github.com/chutney-testing/chutney/issues/400)
+- 🐛 | Http error responses are not print on the UI [\#396](https://github.com/chutney-testing/chutney/issues/396)
+- 🐛 | Global Variables resolution is not complete [\#385](https://github.com/chutney-testing/chutney/issues/385)
+- Dataset key with tab space could be saved but could not be used anymore [\#346](https://github.com/chutney-testing/chutney/issues/346)
+
+**Closed issues:**
+
+- Remove forcing campaign name in uppercase [\#337](https://github.com/chutney-testing/chutney/issues/337)
+
+**Merged pull requests:**
+
+- feat\(engine\): Add finally action in report [\#403](https://github.com/chutney-testing/chutney/pull/403) ([nbrouand](https://github.com/nbrouand))
+- Chore/engine dependency fix [\#401](https://github.com/chutney-testing/chutney/pull/401) ([nbrouand](https://github.com/nbrouand))
+- bugfix\(ui\): Show error message to users [\#395](https://github.com/chutney-testing/chutney/pull/395) ([bessonm](https://github.com/bessonm))
+- Feat/git export [\#394](https://github.com/chutney-testing/chutney/pull/394) ([bessonm](https://github.com/bessonm))
+- feat\(ui\): remove forcing campaigns & scenarios uppercased titles [\#392](https://github.com/chutney-testing/chutney/pull/392) ([rbenyoussef](https://github.com/rbenyoussef))
+- bugfix\(server\): Dataset with tab space at extrimity could not be used [\#389](https://github.com/chutney-testing/chutney/pull/389) ([rbenyoussef](https://github.com/rbenyoussef))
+- Add test on GwtScenarioMapper [\#388](https://github.com/chutney-testing/chutney/pull/388) ([nbrouand](https://github.com/nbrouand))
+- Global variables resolution [\#386](https://github.com/chutney-testing/chutney/pull/386) ([boddissattva](https://github.com/boddissattva))
+- feat: add campaign recurrent Planning per day, week and month [\#381](https://github.com/chutney-testing/chutney/pull/381) ([RedouaeElalami](https://github.com/RedouaeElalami))
+- feat\(server/ui/engine\): permit asserts declarations in tasks one [\#373](https://github.com/chutney-testing/chutney/pull/373) ([rbenyoussef](https://github.com/rbenyoussef))
+
+
 ## [1.3.0](https://github.com/chutney-testing/chutney/tree/1.3.0)
 
 [Full Changelog](https://github.com/chutney-testing/chutney/compare/1.2.20...1.3.0)

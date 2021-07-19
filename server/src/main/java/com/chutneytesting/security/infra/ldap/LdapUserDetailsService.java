@@ -1,6 +1,6 @@
 package com.chutneytesting.security.infra.ldap;
 
-import com.chutneytesting.security.domain.User;
+import com.chutneytesting.security.api.UserDto;
 import java.util.List;
 import javax.naming.directory.SearchControls;
 import org.springframework.ldap.AuthenticationException;
@@ -13,12 +13,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class LdapUserDetailsService implements UserDetailsService {
 
-    private String userIdAttribute;
-    private LdapTemplate ldapTemplate;
-    private AttributesMapper<User> ldapAttributesMapper;
-    private String[] attributesToRetrieve;
+    private final String userIdAttribute;
+    private final LdapTemplate ldapTemplate;
+    private final AttributesMapper<UserDto> ldapAttributesMapper;
+    private final String[] attributesToRetrieve;
 
-    LdapUserDetailsService(LdapTemplate ldapTemplate, LdapAttributesProperties ldapAttributesProperties, AttributesMapper<User> ldapAttributesMapper) {
+    LdapUserDetailsService(LdapTemplate ldapTemplate, LdapAttributesProperties ldapAttributesProperties, AttributesMapper<UserDto> ldapAttributesMapper) {
         this.userIdAttribute = ldapAttributesProperties.getId();
         this.ldapTemplate = ldapTemplate;
         this.ldapAttributesMapper = ldapAttributesMapper;
@@ -28,7 +28,7 @@ public class LdapUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        final List<User> results = ldapTemplate.search("", new EqualsFilter(userIdAttribute, username).encode(), SearchControls.ONELEVEL_SCOPE, attributesToRetrieve, ldapAttributesMapper);
+        final List<UserDto> results = ldapTemplate.search("", new EqualsFilter(userIdAttribute, username).encode(), SearchControls.ONELEVEL_SCOPE, attributesToRetrieve, ldapAttributesMapper);
 
         if (results.size() != 1) {
             throw new AuthenticationException();

@@ -14,7 +14,11 @@
             "backups": "Backups",
             "variable": "Variable",
             "dataset": "Dataset",
-            "jiraId": "Jira identifier"
+            "jiraId": "Jira identifier",
+            "roles": "Roles",
+            "admin": "Admin",
+            "signIn": "Sign In",
+            "signOut": "Sign Out"
         }
     },
     "home": {
@@ -116,7 +120,9 @@
     },
     "campaigns": {
         "search": {
-            "placeholder": "Search for campaign"
+            "placeholder": "Search for campaign",
+            "selectAllText": "Select all",
+            "deselectAllText": "Deselect all"
         },
         "list": {
             "item": {
@@ -124,6 +130,10 @@
                 "description.none": "No description"
             },
             "empty": "No campaign available",
+            "executions": {
+                "last": "Last executions",
+                "next": "Next executions"
+            },
             "actions": {
                 "create": "New campaign"
             }
@@ -175,6 +185,7 @@
                     "required": "Title is mandatory."
                 },
                 "description": "Description",
+                "tags": "Tags",
                 "schedule": {
                     "label": "Schedule time",
                     "pattern": "Pattern should be HH:MM"
@@ -265,7 +276,8 @@
                 "agents.title": "Agents",
                 "environments.title": "Environments",
                 "components.title": "Components",
-                "globalvars.title": "Global vars"
+                "globalvars.title": "Global vars",
+                "jira.title": "Jira links"
             }
         }
     },
@@ -280,8 +292,9 @@
             },
             "edition": {
                 "draganddrop": "Drag/drop your component",
-                "existInStep":"Exist in step: ",
-                "existInScenario": "Exist in scénario: ",
+                "existTitle":"References",
+                "existInStep": "Component",
+                "existInScenario": "Testcase",
                 "seeParents": "See/hide parents",
                 "blocks": {
                     "global": "General",
@@ -342,9 +355,16 @@
     },
     "login": {
         "logout": "You are disconnected",
-        "invalid": "Your session has ended",
+        "unauthorized": "You are not authorized to access this view. Contact your administrator.",
+        "expired": "Session expired. Sign in again.",
         "username": "Username",
         "password": "Password"
+    },
+    "alert": {
+        "success": "Success",
+        "info": "Information",
+        "error": "Error",
+        "warning": "Warning"
     },
     "global": {
         "time": {
@@ -353,6 +373,10 @@
             "today.at": "Today at"
         },
         "actions": {
+            "ongoing": {
+                "saving": "Saving ..."
+            },
+
             "search": "Search",
             "add": "Add",
             "edit": "Edit",
@@ -376,6 +400,7 @@
             "stop": "Stop",
             "resume": "Resume",
             "pause": "Pause",
+            "help": "Help",
 
             "done": {
                 "saved": "Saved"

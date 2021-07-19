@@ -50,7 +50,7 @@ public class CampaignExecutionEngine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Campaign.class);
 
-    private ExecutorService executor;
+    private final ExecutorService executor;
     private final CampaignRepository campaignRepository;
     private final ScenarioExecutionEngine scenarioExecutionEngine;
     private final ExecutionHistoryRepository executionHistoryRepository;
@@ -59,8 +59,8 @@ public class CampaignExecutionEngine {
     private final JiraXrayPlugin jiraXrayPlugin;
     private final ChutneyMetrics metrics;
 
-    private Map<Long, CampaignExecutionReport> currentCampaignExecutions = new ConcurrentHashMap<>();
-    private Map<Long, Boolean> currentCampaignExecutionsStopRequests = new ConcurrentHashMap<>();
+    private final Map<Long, CampaignExecutionReport> currentCampaignExecutions = new ConcurrentHashMap<>();
+    private final Map<Long, Boolean> currentCampaignExecutionsStopRequests = new ConcurrentHashMap<>();
 
     public CampaignExecutionEngine(CampaignRepository campaignRepository,
                                    ScenarioExecutionEngine scenarioExecutionEngine,
@@ -69,7 +69,7 @@ public class CampaignExecutionEngine {
                                    DataSetHistoryRepository dataSetHistoryRepository,
                                    JiraXrayPlugin jiraXrayPlugin,
                                    ChutneyMetrics metrics,
-                                   Integer threadForCampaigns) {
+                                   ExecutorService executorService) {
         this.campaignRepository = campaignRepository;
         this.scenarioExecutionEngine = scenarioExecutionEngine;
         this.executionHistoryRepository = executionHistoryRepository;
@@ -77,8 +77,7 @@ public class CampaignExecutionEngine {
         this.dataSetHistoryRepository = dataSetHistoryRepository;
         this.jiraXrayPlugin = jiraXrayPlugin;
         this.metrics = metrics;
-        this.executor = Executors.newFixedThreadPool(threadForCampaigns);
-        LOGGER.debug("Pool for campaigns created with size {}", threadForCampaigns);
+        this.executor = executorService;
     }
 
     public List<CampaignExecutionReport> executeByName(String campaignName, String userId) {

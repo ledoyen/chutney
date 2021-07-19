@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+
 import { newInstance } from '@shared/tools';
-import { DataSetService } from '@core/services';
-import { Dataset } from '@model';
 import { distinct, flatMap } from '@shared/tools/array-utils';
+import { DataSetService } from '@core/services';
+import { Dataset, Authorization } from '@model';
 
 @Component({
     selector: 'chutney-dataset-list',
@@ -21,7 +22,11 @@ export class DatasetListComponent implements OnInit {
     selectedTags: string[] = [];
     selectedItem: any[];
 
-    constructor(private dataSetService: DataSetService) {
+    Authorization = Authorization;
+
+    constructor(
+        private dataSetService: DataSetService
+    ) {
     }
 
     ngOnInit(): void {
@@ -40,7 +45,7 @@ export class DatasetListComponent implements OnInit {
     }
 
     showPreview(dataset: Dataset) {
-        if (this.preview === null || this.preview.id !== dataset.id) {
+        if (this.preview == null || this.preview.id !== dataset.id) {
             this.dataSetService.findById(dataset.id).subscribe(
                 (res) => {
                     this.preview = res;
@@ -73,5 +78,9 @@ export class DatasetListComponent implements OnInit {
     onItemDeSelect(item: any) {
         this.selectedTags.splice(this.selectedTags.indexOf(item.itemName), 1);
         this.selectedTags = newInstance(this.selectedTags);
+    }
+
+    onItemDeSelectAll() {
+        this.selectedTags = newInstance([]);
     }
 }

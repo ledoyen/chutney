@@ -7,13 +7,21 @@ import static com.chutneytesting.tools.ui.ComposableIdUtils.toFrontId;
 import static java.time.Instant.now;
 
 import com.chutneytesting.design.api.scenario.compose.dto.ComposableTestCaseDto;
+import com.chutneytesting.design.api.scenario.compose.mapper.ExecutableComposableTestCaseMapper;
+import com.chutneytesting.design.domain.scenario.TestCase;
 import com.chutneytesting.design.domain.scenario.TestCaseMetadataImpl;
 import com.chutneytesting.design.domain.scenario.TestCaseRepository;
 import com.chutneytesting.design.domain.scenario.compose.ComposableTestCase;
 import com.chutneytesting.design.domain.scenario.compose.ComposableTestCaseRepository;
-import com.chutneytesting.security.domain.UserService;
+import com.chutneytesting.execution.domain.ExecutionRequest;
+import com.chutneytesting.execution.domain.compiler.TestCasePreProcessors;
+import com.chutneytesting.execution.domain.scenario.composed.ExecutableComposedTestCase;
+import com.chutneytesting.security.infra.SpringUserService;
+import com.chutneytesting.tools.ui.KeyValue;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,33 +40,53 @@ public class ComponentEditionController {
 
     private final ComposableTestCaseRepository composableTestCaseRepository;
     private final TestCaseRepository testCaseRepository;
-    private final UserService userService;
+    private final SpringUserService userService;
+    private final TestCasePreProcessors testCasePreProcessors;
 
-    public ComponentEditionController(ComposableTestCaseRepository composableTestCaseRepository, TestCaseRepository testCaseRepository, UserService userService) {
+    public ComponentEditionController(ComposableTestCaseRepository composableTestCaseRepository, TestCaseRepository testCaseRepository, SpringUserService userService, TestCasePreProcessors testCasePreProcessors) {
         this.composableTestCaseRepository = composableTestCaseRepository;
         this.testCaseRepository = testCaseRepository;
         this.userService = userService;
+        this.testCasePreProcessors = testCasePreProcessors;
     }
 
-    @PostMapping(path = "", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('SCENARIO_WRITE')")
+    @PostMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public String saveTestCase(@RequestBody ComposableTestCaseDto composableTestCaseDto) {
         ComposableTestCase composableTestCase = fromDto(composableTestCaseDto);
         composableTestCase = new ComposableTestCase(
             composableTestCase.id,
             TestCaseMetadataImpl.TestCaseMetadataBuilder.from(composableTestCase.metadata)
                 .withUpdateDate(now())
-                .withAuthor(userService.getCurrentUser().getId())
+                .withAuthor(userService.currentUser().getId())
                 .build(),
             composableTestCase.composableScenario
         );
         return toFrontId(composableTestCaseRepository.save(composableTestCase));
     }
 
-    @GetMapping(path = "/{testCaseId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('SCENARIO_READ')")
+    @GetMapping(path = "/{testCaseId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ComposableTestCaseDto getTestCase(@PathVariable("testCaseId") String testCaseId) {
         return toDto(composableTestCaseRepository.findById(fromFrontId(Optional.of(testCaseId))));
     }
 
+    @PreAuthorize("hasAuthority('CAMPAIGN_WRITE')")
+    @GetMapping(path = "/{testCaseId}/executable/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<KeyValue> getTestCaseExecutionParameters(@PathVariable("testCaseId") String testCaseId) {
+        return toDto(composableTestCaseRepository.findById(fromFrontId(Optional.of(testCaseId)))).executionParameters();
+    }
+
+    @PreAuthorize("hasAuthority('SCENARIO_READ')")
+    @GetMapping(path = "/{testCaseId}/executable", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ComposableTestCaseDto getExecutableTestCase(@PathVariable("testCaseId") String testCaseId) {
+        TestCase testCase = testCaseRepository.findById(fromFrontId(Optional.of(testCaseId)));
+        ExecutableComposedTestCase result = testCasePreProcessors.apply(new ExecutionRequest(testCase, "env", "userId"));
+
+        return ExecutableComposableTestCaseMapper.toDto(result);
+    }
+
+    @PreAuthorize("hasAuthority('SCENARIO_WRITE')")
     @DeleteMapping(path = "/{testCaseId}")
     public void removeScenarioById(@PathVariable("testCaseId") String testCaseId) {
         String testCaseBackId = fromFrontId(Optional.of(testCaseId));

@@ -50,7 +50,7 @@ public class ScenarioExecutionEngineAsync {
     private final TestCasePreProcessors testCasePreProcessors;
     private final DataSetHistoryRepository dataSetHistoryRepository;
 
-    private Map<Long, Pair<Observable<ScenarioExecutionReport>, Long>> scenarioExecutions = new ConcurrentHashMap<>();
+    private final Map<Long, Pair<Observable<ScenarioExecutionReport>, Long>> scenarioExecutions = new ConcurrentHashMap<>();
     private long retentionDelaySeconds;
     private long debounceMilliSeconds;
 
@@ -216,7 +216,7 @@ public class ScenarioExecutionEngineAsync {
     }
 
     /**
-     * Build a {@link DetachedExecution} to store via {@link ExecutionHistoryRepository}
+     * Build a {@link ExecutionHistory.DetachedExecution} to store via {@link ExecutionHistoryRepository}
      *
      * @param scenarioReport report to summarize
      */

@@ -1,5 +1,7 @@
 package com.chutneytesting.documentation.infra;
 
+import static com.chutneytesting.ServerConfiguration.EXAMPLES_ACTIVE_SPRING_VALUE;
+
 import com.chutneytesting.design.domain.scenario.TestCaseMetadata;
 import com.chutneytesting.design.domain.scenario.TestCaseMetadataImpl;
 import com.chutneytesting.design.infra.storage.scenario.DelegateScenarioRepository;
@@ -18,13 +20,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExamplesRepository implements DelegateScenarioRepository {
 
-    private static Instant START_TIME = Instant.MIN;
+    private static final Instant START_TIME = Instant.MIN;
 
-    private Map<String, String> examples; // fileName, Content
+    private final Map<String, String> examples; // fileName, Content
     private boolean isActive;
     private final String ORIGIN = "examples";
 
-    public ExamplesRepository(@Value("${chutney.examples.active:false}") boolean isActive,
+    public ExamplesRepository(@Value(EXAMPLES_ACTIVE_SPRING_VALUE) boolean isActive,
                               @Qualifier("embeddedExamples") Map<String, String> examples) {
         this.isActive = isActive;
         this.examples = examples;
@@ -72,9 +74,14 @@ public class ExamplesRepository implements DelegateScenarioRepository {
         return testCaseData.map(tcd -> tcd.version);
     }
 
+    @Override
+    public List<TestCaseMetadata> search(String textFilter) {
+        return findAll();
+    }
+
     // TODO - remove duplication & do it only once on startup in DocumentationConfiguration
     private TestCaseData mapToTestCase(Map.Entry<String, String> entry) {
-        return  TestCaseData.builder()
+        return TestCaseData.builder()
             .withContentVersion("RAW")
             .withId(resolveExampleID(entry))
             .withTitle(entry.getKey())

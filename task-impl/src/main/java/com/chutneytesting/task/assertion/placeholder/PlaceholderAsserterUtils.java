@@ -18,9 +18,11 @@ public class PlaceholderAsserterUtils {
         asserters.add(new MatchesStringAsserter());
         asserters.add(new LessThanAsserter());
         asserters.add(new GreaterThanAsserter());
+        asserters.add(new ValueArrayAsserter());
+        asserters.add(new IsEmptyAsserter());
     }
 
-    public static final Optional<PlaceholderAsserter> getAsserterMatching(Object toMatch) {
+    public static Optional<PlaceholderAsserter> getAsserterMatching(Object toMatch) {
         if (toMatch == null) {
             return Optional.of(new IsNullAsserter());
         }

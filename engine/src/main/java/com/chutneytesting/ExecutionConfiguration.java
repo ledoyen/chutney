@@ -1,6 +1,7 @@
 package com.chutneytesting;
 
 import static com.chutneytesting.tools.Streams.identity;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 
 import com.chutneytesting.engine.api.execution.EmbeddedTestEngine;
@@ -24,9 +25,14 @@ import com.chutneytesting.task.domain.TaskTemplateParserV2;
 import com.chutneytesting.task.domain.TaskTemplateRegistry;
 import com.chutneytesting.task.infra.DefaultTaskTemplateLoader;
 import com.chutneytesting.task.spi.Task;
+import com.chutneytesting.task.spi.injectable.TasksConfiguration;
 import com.chutneytesting.tools.ThrowingFunction;
 import com.chutneytesting.tools.loader.ExtensionLoaders;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +53,10 @@ public class ExecutionConfiguration {
     private final Long reporterTTL;
 
     public ExecutionConfiguration() {
-        this(5L);
+        this(5L, Executors.newFixedThreadPool(10), emptyMap(), null, null);
     }
 
-    public ExecutionConfiguration(Long reporterTTL) {
+    public ExecutionConfiguration(Long reporterTTL, Executor taskExecutor, Map<String,String> tasksConfiguration, String user, String password) {
         this.reporterTTL = reporterTTL;
 
         TaskTemplateLoader taskTemplateLoaderV2 = createTaskTemplateLoaderV2();
@@ -59,8 +65,8 @@ public class ExecutionConfiguration {
 
         taskTemplateRegistry = new DefaultTaskTemplateRegistry(new TaskTemplateLoaders(singletonList(taskTemplateLoaderV2)));
         reporter = createReporter();
-        executionEngine = createExecutionEngine();
-        embeddedTestEngine = createEmbeddedTestEngine();
+        executionEngine = createExecutionEngine(taskExecutor, user, password);
+        embeddedTestEngine = createEmbeddedTestEngine(new EngineTasksConfiguration(tasksConfiguration));
     }
 
     public TaskTemplateRegistry taskTemplateRegistry() {
@@ -113,20 +119,21 @@ public class ExecutionConfiguration {
         return new Reporter(reporterTTL);
     }
 
-    private ExecutionEngine createExecutionEngine() {
+    private ExecutionEngine createExecutionEngine(Executor taskExecutor, String user, String password) {
         return new DefaultExecutionEngine(
             new StepDataEvaluator(spelFunctions),
             new StepExecutionStrategies(stepExecutionStrategies),
-            new DelegationService(new DefaultStepExecutor(taskTemplateRegistry), new HttpClient()),
-            reporter);
+            new DelegationService(new DefaultStepExecutor(taskTemplateRegistry), new HttpClient(user, password)),
+            reporter,
+            taskExecutor);
     }
 
-    private TestEngine createEmbeddedTestEngine() {
-        return new EmbeddedTestEngine(executionEngine, reporter, new ExecutionManager());
+    private TestEngine createEmbeddedTestEngine(TasksConfiguration tasksConfiguration) {
+        return new EmbeddedTestEngine(executionEngine, reporter, new ExecutionManager(), tasksConfiguration);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T instantiate(Class<?> clazz) throws IllegalAccessException, InstantiationException {
-        return (T) clazz.newInstance();
+    private static <T> T instantiate(Class<?> clazz) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        return (T) clazz.getDeclaredConstructor().newInstance();
     }
 }

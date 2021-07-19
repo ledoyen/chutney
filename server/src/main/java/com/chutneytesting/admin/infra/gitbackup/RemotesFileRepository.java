@@ -1,7 +1,10 @@
 package com.chutneytesting.admin.infra.gitbackup;
 
+import static com.chutneytesting.ServerConfiguration.CONFIGURATION_FOLDER_SPRING_VALUE;
 import static com.chutneytesting.tools.file.FileUtils.initFolder;
+import static java.util.Optional.ofNullable;
 
+import com.chutneytesting.admin.domain.BackupNotFoundException;
 import com.chutneytesting.admin.domain.gitbackup.RemoteRepository;
 import com.chutneytesting.admin.domain.gitbackup.Remotes;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -34,7 +37,7 @@ public class RemotesFileRepository implements Remotes {
         .enable(SerializationFeature.INDENT_OUTPUT)
         .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
-    RemotesFileRepository(@Value("${configuration-folder:conf}") String storeFolderPath) throws UncheckedIOException {
+    RemotesFileRepository(@Value(CONFIGURATION_FOLDER_SPRING_VALUE) String storeFolderPath) throws UncheckedIOException {
         this.storeFolderPath = Paths.get(storeFolderPath).resolve(ROOT_DIRECTORY_NAME);
         this.resolvedFilePath = this.storeFolderPath.resolve(REMOTES_FILE);
         initFolder(this.storeFolderPath);
@@ -58,13 +61,15 @@ public class RemotesFileRepository implements Remotes {
     @Override
     public void remove(String name) {
         Map<String, GitRemoteDto> remotes = readFromDisk();
-        remotes.remove(name);
-        writeOnDisk(resolvedFilePath, remotes);
+        ofNullable(remotes.remove(name))
+            .ifPresent(r -> writeOnDisk(resolvedFilePath, remotes));
     }
 
     @Override
     public RemoteRepository get(String name) {
-        return fromDto(readFromDisk().get(name));
+        return ofNullable(readFromDisk().get(name))
+            .map(this::fromDto)
+            .orElseThrow(() -> new BackupNotFoundException(name));
     }
 
     private Map<String, GitRemoteDto> readFromDisk() {
@@ -72,7 +77,8 @@ public class RemotesFileRepository implements Remotes {
         try {
             if (Files.exists(resolvedFilePath)) {
                 byte[] bytes = Files.readAllBytes(resolvedFilePath);
-                remotes.putAll(objectMapper.readValue(bytes, new TypeReference<HashMap<String, GitRemoteDto>>() {}));
+                remotes.putAll(objectMapper.readValue(bytes, new TypeReference<HashMap<String, GitRemoteDto>>() {
+                }));
             }
         } catch (IOException e) {
             throw new RuntimeException("Cannot read configuration file: " + resolvedFilePath, e);

@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.chutneytesting</groupId>
         <artifactId>chutney-parent</artifactId>
-        <version>1.3.1-SNAPSHOT</version>
+        <version>NO_VERSION</version>
     </parent>
 
     <artifactId>engine</artifactId>
@@ -37,6 +37,10 @@
             <artifactId>spring-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
@@ -55,6 +59,14 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-paranamer</artifactId>
         </dependency>
         <!-- For ugly hack in InputParameterResolver -->
         <dependency>

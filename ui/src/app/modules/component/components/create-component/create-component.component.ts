@@ -14,10 +14,11 @@ import {
     MapInput,
     SelectableTags,
     SimpleInput,
-    Task
+    Task,
+    Authorization
 } from '@model';
 import { delay } from '@shared/tools/async-utils';
-import { ComponentService } from '@core/services';
+import { ComponentService, LoginService } from '@core/services';
 import { distinct, flatMap } from '@shared/tools';
 
 @Component({
@@ -65,13 +66,16 @@ export class CreateComponent implements OnInit, OnDestroy {
 
     private routeParamsSubscription: Subscription;
 
+    Authorization = Authorization;
+
     constructor(
         private componentService: ComponentService,
         private formBuilder: FormBuilder,
         private dragulaService: DragulaService,
         private translate: TranslateService,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private loginService: LoginService
     ) {
     }
 
@@ -101,6 +105,9 @@ export class CreateComponent implements OnInit, OnDestroy {
             tags: '',
             strategy: new FormControl()
         });
+        if (!this.loginService.hasAuthorization([Authorization.COMPONENT_WRITE])) {
+            this.componentForm.disable();
+        }
     }
 
     private initTranslation() {
@@ -110,6 +117,7 @@ export class CreateComponent implements OnInit, OnDestroy {
     }
 
     private initDragAndDrop() {
+        const userHasWritePermission = this.loginService.hasAuthorization([Authorization.COMPONENT_WRITE]);
         this.dragulaService.createGroup('COPYABLE', {
             copy: (el, source) => {
                 return source.id === 'left';
@@ -120,7 +128,8 @@ export class CreateComponent implements OnInit, OnDestroy {
             accepts: (el, target, source, sibling) => {
                 // To avoid dragging from right to left container
                 return target.id !== 'left';
-            }
+            },
+            moves: (el, container, handle, sibling) => userHasWritePermission
         });
     }
 
@@ -142,9 +151,9 @@ export class CreateComponent implements OnInit, OnDestroy {
     }
 
     initSelectedComponent(componentId) {
-        if (componentId !== null) {
+        if (componentId != null) {
             const foundComponent = this.componentTasks.find(c => c.id === componentId);
-            if (foundComponent !== undefined) {
+            if (foundComponent != null) {
                 this.editComponentTask(foundComponent);
             }
         }
@@ -162,7 +171,7 @@ export class CreateComponent implements OnInit, OnDestroy {
     editComponentTask(componentToEdit: ComponentTask) {
         this.resetData();
 
-        if (componentToEdit.implementation === null) {
+        if (componentToEdit.implementation == null) {
             this.componentService.findParents(componentToEdit.id).subscribe(
                 (res) => { this.parents = res; }
             );

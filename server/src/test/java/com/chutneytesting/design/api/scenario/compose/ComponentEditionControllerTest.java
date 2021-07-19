@@ -4,7 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,8 +19,11 @@ import com.chutneytesting.design.domain.scenario.TestCaseRepository;
 import com.chutneytesting.design.domain.scenario.compose.ComposableScenario;
 import com.chutneytesting.design.domain.scenario.compose.ComposableTestCase;
 import com.chutneytesting.design.domain.scenario.compose.ComposableTestCaseRepository;
-import com.chutneytesting.security.domain.User;
-import com.chutneytesting.security.domain.UserService;
+import com.chutneytesting.execution.domain.compiler.TestCasePreProcessors;
+import com.chutneytesting.execution.domain.scenario.composed.ExecutableComposedScenario;
+import com.chutneytesting.execution.domain.scenario.composed.ExecutableComposedTestCase;
+import com.chutneytesting.security.api.UserDto;
+import com.chutneytesting.security.infra.SpringUserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,15 +45,17 @@ public class ComponentEditionControllerTest {
             )
             .build();
 
-    private ComposableTestCaseRepository composableTestCaseRepository = mock(ComposableTestCaseRepository.class);
+    private final ComposableTestCaseRepository composableTestCaseRepository = mock(ComposableTestCaseRepository.class);
     private final TestCaseRepository testCaseRepository = mock(TestCaseRepository.class);
-    private final UserService userService = mock(UserService.class);
+    private final SpringUserService userService = mock(SpringUserService.class);
+    private final TestCasePreProcessors testCasePreProcessors  = mock(TestCasePreProcessors.class);
+    private final UserDto currentUser = new UserDto();
 
     private MockMvc mockMvc;
 
     @BeforeEach
     public void setUp() {
-        ComponentEditionController sut = new ComponentEditionController(composableTestCaseRepository, testCaseRepository, userService);
+        ComponentEditionController sut = new ComponentEditionController(composableTestCaseRepository, testCaseRepository, userService, testCasePreProcessors);
 
         mockMvc = MockMvcBuilders.standaloneSetup(sut)
             .setControllerAdvice(new RestExceptionHandler())
@@ -62,14 +67,15 @@ public class ComponentEditionControllerTest {
         when(composableTestCaseRepository.save(any()))
             .thenReturn(DEFAULT_COMPOSABLE_TESTCASE_DB_ID);
 
-        when(userService.getCurrentUser()).thenReturn(User.ANONYMOUS_USER);
+        currentUser.setId("currentUser");
+        when(userService.currentUser()).thenReturn(currentUser);
     }
 
     @Test
     public void should_save_testCase() throws Exception {
         // When
         mockMvc.perform(post(ComponentEditionController.BASE_URL)
-            .contentType(APPLICATION_JSON_UTF8_VALUE)
+            .contentType(APPLICATION_JSON_VALUE)
             .content(om.writeValueAsString(composableTestCaseDto)))
             .andExpect(status().isOk());
 
@@ -84,6 +90,24 @@ public class ComponentEditionControllerTest {
 
         // Then
         verify(composableTestCaseRepository).findById(DEFAULT_COMPOSABLE_TESTCASE_DB_ID);
+    }
+
+    @Test
+    public void should_find_testCase_with_parameters_replaced() throws Exception {
+        // Given
+        when(testCasePreProcessors.apply(any()))
+            .thenReturn(new ExecutableComposedTestCase(
+            TestCaseMetadataImpl.builder()
+                .build(),
+            ExecutableComposedScenario.builder().build()
+        ));
+
+        // When
+        mockMvc.perform(get(ComponentEditionController.BASE_URL + "/" + DEFAULT_COMPOSABLE_TESTCASE_ID + "/executable" ));
+
+        // Then
+        verify(testCaseRepository).findById(DEFAULT_COMPOSABLE_TESTCASE_DB_ID);
+        verify(testCasePreProcessors).apply(any());
     }
 
     @Test

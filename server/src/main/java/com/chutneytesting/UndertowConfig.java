@@ -1,5 +1,9 @@
 package com.chutneytesting;
 
+import static com.chutneytesting.ServerConfiguration.SERVER_HTTP_INTERFACE_SPRING_VALUE;
+import static com.chutneytesting.ServerConfiguration.SERVER_HTTP_PORT_SPRING_VALUE;
+import static com.chutneytesting.ServerConfiguration.SERVER_PORT_SPRING_VALUE;
+
 import io.undertow.servlet.api.SecurityConstraint;
 import io.undertow.servlet.api.SecurityInfo;
 import io.undertow.servlet.api.TransportGuaranteeType;
@@ -14,24 +18,22 @@ import org.springframework.context.annotation.Profile;
 @Profile({"undertow-https-redirect"})
 public class UndertowConfig {
 
-    @Value("${server.port}")
+    @Value(SERVER_PORT_SPRING_VALUE)
     private int securePort;
 
-    @Value("${server.http.port}")
+    @Value(SERVER_HTTP_PORT_SPRING_VALUE)
     private int httpPort;
 
-    @Value("${server.http.interface}")
+    @Value(SERVER_HTTP_INTERFACE_SPRING_VALUE)
     private String httpInterface;
 
     @Bean
     public UndertowServletWebServerFactory servletWebServerFactory() {
         UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory();
         // Add http listener
-        factory.getBuilderCustomizers().add(builder -> {
-            builder.addHttpListener(httpPort, httpInterface);
-        });
+        factory.getBuilderCustomizers().add(builder -> builder.addHttpListener(httpPort, httpInterface));
         // Redirect rule to secure port
-        factory.getDeploymentInfoCustomizers().add(deploymentInfo -> {
+        factory.getDeploymentInfoCustomizers().add(deploymentInfo ->
             deploymentInfo.addSecurityConstraint(
                 new SecurityConstraint()
                     .addWebResourceCollection(new WebResourceCollection().addUrlPattern("/*"))
@@ -39,8 +41,7 @@ public class UndertowConfig {
                     .setEmptyRoleSemantic(SecurityInfo.EmptyRoleSemantic.PERMIT))
                 .setConfidentialPortManager(
                     exchange -> securePort
-                );
-        });
+                ));
         return factory;
     }
 }

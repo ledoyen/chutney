@@ -1,5 +1,8 @@
 package com.chutneytesting.design.infra.storage.editionlock;
 
+import static com.chutneytesting.ServerConfiguration.EDITIONS_TTL_UNIT_SPRING_VALUE;
+import static com.chutneytesting.ServerConfiguration.EDITIONS_TTL_VALUE_SPRING_VALUE;
+
 import com.chutneytesting.design.domain.editionlock.TestCaseEdition;
 import com.chutneytesting.design.domain.editionlock.TestCaseEditions;
 import com.google.common.cache.CacheBuilder;
@@ -17,12 +20,12 @@ public class TestCaseEditionsImpl implements TestCaseEditions {
     private final LoadingCache<TestCaseEdition, TestCaseEdition> editions;
 
     public TestCaseEditionsImpl(
-        @Value("${iceberg.editions.ttl.value:6}") Integer ttlValue,
-        @Value("${iceberg.editions.ttl.unit:HOURS}") String ttlUnit
+        @Value(EDITIONS_TTL_VALUE_SPRING_VALUE) Integer ttlValue,
+        @Value(EDITIONS_TTL_UNIT_SPRING_VALUE) String ttlUnit
     ) {
         editions = CacheBuilder.newBuilder()
             .expireAfterWrite(ttlValue, TimeUnit.valueOf(ttlUnit))
-            .build(new CacheLoader<TestCaseEdition, TestCaseEdition>() {
+            .build(new CacheLoader<>() {
                 @Override
                 public TestCaseEdition load(TestCaseEdition key) throws Exception {
                     return key;

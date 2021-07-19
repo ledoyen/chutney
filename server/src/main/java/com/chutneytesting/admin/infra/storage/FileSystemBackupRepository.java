@@ -1,5 +1,8 @@
 package com.chutneytesting.admin.infra.storage;
 
+import static com.chutneytesting.ServerConfiguration.CONFIGURATION_FOLDER_SPRING_VALUE;
+import static com.chutneytesting.tools.file.FileUtils.initFolder;
+
 import com.chutneytesting.admin.domain.Backup;
 import com.chutneytesting.admin.domain.BackupNotFoundException;
 import com.chutneytesting.admin.domain.BackupRepository;
@@ -7,6 +10,7 @@ import com.chutneytesting.admin.domain.Backupable;
 import com.chutneytesting.admin.domain.HomePageRepository;
 import com.chutneytesting.agent.domain.explore.CurrentNetworkDescription;
 import com.chutneytesting.design.domain.globalvar.GlobalvarRepository;
+import com.chutneytesting.design.domain.plugins.jira.JiraRepository;
 import com.chutneytesting.design.infra.storage.scenario.compose.orient.OrientComponentDB;
 import com.chutneytesting.environment.domain.Environment;
 import com.chutneytesting.environment.domain.EnvironmentRepository;
@@ -14,6 +18,7 @@ import com.chutneytesting.tools.Try;
 import com.chutneytesting.tools.ZipUtils;
 import com.chutneytesting.tools.file.FileUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.BufferedOutputStream;
@@ -40,11 +45,13 @@ public class FileSystemBackupRepository implements BackupRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemBackupRepository.class);
 
+    static final Path ROOT_DIRECTORY_NAME = Paths.get("backups", "zip");
     static final String HOME_PAGE_BACKUP_NAME = "homepage.zip";
     static final String ENVIRONMENTS_BACKUP_NAME = "environments.zip";
     static final String AGENTS_BACKUP_NAME = "agents.zip";
     static final String GLOBAL_VARS_BACKUP_NAME = "globalvars.zip";
     static final String COMPONENTS_BACKUP_NAME = "orient.zip";
+    static final String JIRA_BACKUP_NAME = "jiralinks.zip";
 
     private final Path backupsRootPath;
 
@@ -53,26 +60,29 @@ public class FileSystemBackupRepository implements BackupRepository {
     private final EnvironmentRepository environmentRepository;
     private final GlobalvarRepository globalvarRepository;
     private final CurrentNetworkDescription currentNetworkDescription;
+    private final JiraRepository jiraRepository;
 
     private final ObjectMapper om = new ObjectMapper()
         .findAndRegisterModules()
+        .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
         .enable(SerializationFeature.INDENT_OUTPUT)
         .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
-    public FileSystemBackupRepository(OrientComponentDB orientComponentDB,
+    public FileSystemBackupRepository(@Value(CONFIGURATION_FOLDER_SPRING_VALUE) String backupsRootPath,
+                                      OrientComponentDB orientComponentDB,
                                       HomePageRepository homePageRepository,
                                       EnvironmentRepository environmentRepository,
                                       GlobalvarRepository globalvarRepository,
-                                      CurrentNetworkDescription currentNetworkDescription,
-                                      @Value("${chutney.backups.root:backups}") String backupsRootPath) {
-        this.backupsRootPath = Paths.get(backupsRootPath).toAbsolutePath();
-        Try.exec(() -> Files.createDirectories(this.backupsRootPath)).runtime();
+                                      CurrentNetworkDescription currentNetworkDescription, JiraRepository jiraRepository) {
+        this.backupsRootPath = Paths.get(backupsRootPath).resolve(ROOT_DIRECTORY_NAME).toAbsolutePath();
+        initFolder(this.backupsRootPath);
 
         this.orientComponentDB = orientComponentDB;
         this.homePageRepository = homePageRepository;
         this.environmentRepository = environmentRepository;
         this.globalvarRepository = globalvarRepository;
         this.currentNetworkDescription = currentNetworkDescription;
+        this.jiraRepository = jiraRepository;
     }
 
     @Override
@@ -111,6 +121,10 @@ public class FileSystemBackupRepository implements BackupRepository {
             backup(orientComponentDB, backupPath.resolve(COMPONENTS_BACKUP_NAME), "orient");
         }
 
+        if (backup.jiraLinks) {
+            backup(jiraRepository, backupPath.resolve(JIRA_BACKUP_NAME), "jira links");
+        }
+
         LOGGER.info("Backup [{}] completed", backupId);
         return backup.id();
     }
@@ -125,7 +139,8 @@ public class FileSystemBackupRepository implements BackupRepository {
                     backupPath.resolve(AGENTS_BACKUP_NAME).toFile().exists(),
                     backupPath.resolve(ENVIRONMENTS_BACKUP_NAME).toFile().exists(),
                     backupPath.resolve(COMPONENTS_BACKUP_NAME).toFile().exists(),
-                    backupPath.resolve(GLOBAL_VARS_BACKUP_NAME).toFile().exists()
+                    backupPath.resolve(GLOBAL_VARS_BACKUP_NAME).toFile().exists(),
+                    backupPath.resolve(JIRA_BACKUP_NAME).toFile().exists()
                 );
             } catch (RuntimeException re) {
                 throw new BackupNotFoundException(backupId);

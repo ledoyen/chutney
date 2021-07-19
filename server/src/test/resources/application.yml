@@ -6,7 +6,7 @@ server:
     port: ${port:80}
     interface: 0.0.0.0
   ssl:
-    keyStore: 'classpath:blackbox/security/server.jks'
+    keyStore: 'classpath:blackbox/keystores/server.jks'
     key-store-password: 'server'
     key-password: 'server'
   undertow:
@@ -21,6 +21,9 @@ management:
       cors:
         allowed-origins: '*'
         allowed-methods: GET
+  health:
+    ldap:
+      enabled: false
 
 spring:
   liquibase:
@@ -32,17 +35,40 @@ spring:
       - mem-auth
       - db-h2
 
-orient:
-  path: target/orient
-  dbproperties:
-    dbName: blackbox_component_db-${random.value}
-    dbType: PLOCAL
-  contextConfiguration:
-    "[storage.diskCache.diskFreeSpaceLimit]": 384
-    "[storage.diskCache.bufferSize]": 1024
-
-iceberg:
+chutney:
+  configuration-folder: target/.chutney/conf
+  environment:
+    configuration-folder: ${chutney.configuration-folder}
+  orient:
+    path: target/.chutney/data/orient
+    dbproperties:
+      dbName: blackbox_component_db-${random.value}
+      dbType: PLOCAL
+    contextConfiguration:
+      "[storage.diskCache.diskFreeSpaceLimit]": 384
+      "[storage.diskCache.bufferSize]": 1024
+  execution:
+    async:
+      publisher:
+        ttl: 5
+        debounce: 250
+  engine:
+    reporter:
+      publisher:
+        ttl: 5
+#    delegation:
+#      user:
+#      password:
+  examples:
+    active: true
+  campaigns:
+    thread: 20
   editions:
     ttl:
       value: 2
       unit: SECONDS
+#  localAgent:
+#    defaultName:
+#    defaultHostName:
+  agentnetwork:
+    connection-checker-timeout: 1000

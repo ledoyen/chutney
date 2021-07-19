@@ -15,8 +15,8 @@ import com.chutneytesting.design.api.scenario.v2_0.dto.TestCaseIndexDto;
 import com.chutneytesting.design.domain.campaign.Campaign;
 import com.chutneytesting.design.domain.campaign.CampaignExecutionReport;
 import com.chutneytesting.design.domain.campaign.CampaignRepository;
-import com.chutneytesting.design.domain.scenario.compose.ComposableTestCaseRepository;
 import com.chutneytesting.design.domain.scenario.TestCaseRepository;
+import com.chutneytesting.design.domain.scenario.compose.ComposableTestCaseRepository;
 import com.chutneytesting.execution.domain.campaign.CampaignExecutionEngine;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,22 +55,26 @@ public class CampaignController {
         this.campaignExecutionEngine = campaignExecutionEngine;
     }
 
-    @PostMapping(path = "", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_WRITE')")
+    @PostMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CampaignDto saveCampaign(@RequestBody CampaignDto campaign) {
         return toDtoWithoutReport(campaignRepository.createOrUpdate(fromDto(campaign)));
     }
 
-    @PutMapping(path = "", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_WRITE')")
+    @PutMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CampaignDto updateCampaign(@RequestBody CampaignDto campaign) {
         return toDtoWithoutReport(campaignRepository.createOrUpdate(fromDto(campaign)));
     }
 
-    @DeleteMapping(path = "/{campaignId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_WRITE')")
+    @DeleteMapping(path = "/{campaignId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public boolean deleteCampaign(@PathVariable("campaignId") Long campaignId) {
         return campaignRepository.removeById(campaignId);
     }
 
-    @GetMapping(path = "/{campaignId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_READ')")
+    @GetMapping(path = "/{campaignId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public CampaignDto getCampaignById(@PathVariable("campaignId") Long campaignId) {
         Campaign campaign = campaignRepository.findById(campaignId);
         List<CampaignExecutionReport> reports = campaignRepository.findExecutionsById(campaignId);
@@ -81,7 +86,8 @@ public class CampaignController {
         return toDto(campaign, reports);
     }
 
-    @GetMapping(path = "/{campaignId}/scenarios", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_READ')")
+    @GetMapping(path = "/{campaignId}/scenarios", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TestCaseIndexDto> getCampaignScenarios(@PathVariable("campaignId") Long campaignId) {
         return campaignRepository.findScenariosIds(campaignId).stream()
             .map(id -> {
@@ -95,14 +101,16 @@ public class CampaignController {
             .collect(Collectors.toList());
     }
 
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_READ')")
+    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<CampaignDto> getAllCampaigns() {
         return campaignRepository.findAll().stream()
             .map(CampaignMapper::toDtoWithoutReport)
             .collect(Collectors.toList());
     }
 
-    @GetMapping(path = "/lastexecutions/{limit}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('CAMPAIGN_READ')")
+    @GetMapping(path = "/lastexecutions/{limit}", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<CampaignExecutionReportDto> getLastExecutions(@PathVariable("limit") Long limit) {
         List<CampaignExecutionReport> lastExecutions = campaignExecutionEngine.currentExecutions();
 
@@ -117,7 +125,8 @@ public class CampaignController {
             .collect(Collectors.toList());
     }
 
-    @GetMapping(path = "/scenario/{scenarioId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('SCENARIO_READ')")
+    @GetMapping(path = "/scenario/{scenarioId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<CampaignDto> getCampaignsByScenarioId(@PathVariable("scenarioId") String scenarioId) {
         return campaignRepository.findCampaignsByScenarioId(fromFrontId(scenarioId)).stream()
             .map(CampaignMapper::toDtoWithoutReport)

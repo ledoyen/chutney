@@ -52,7 +52,7 @@ public class StepTest {
         doThrow(new RuntimeException()).when(stepExecutor).execute(any(), any(), any(), any());
         Step step = buildEmptyStep(stepExecutor);
 
-        ScenarioExecution execution = ScenarioExecution.createScenarioExecution();
+        ScenarioExecution execution = ScenarioExecution.createScenarioExecution(null);
         awaitDuring(500, MILLISECONDS);
         RxBus.getInstance().post(new StopExecutionAction(execution.executionId));
         awaitDuring(500, MILLISECONDS);
@@ -68,7 +68,7 @@ public class StepTest {
         StepExecutor stepExecutor = mock(StepExecutor.class);
         Step step = buildEmptyStep(stepExecutor);
 
-        ScenarioExecution execution = ScenarioExecution.createScenarioExecution();
+        ScenarioExecution execution = ScenarioExecution.createScenarioExecution(null);
 
         RxBus.getInstance().post(new PauseExecutionAction(execution.executionId));
         Schedulers.io().createWorker().schedule(() -> step.execute(execution, new ScenarioContextImpl()));
@@ -96,7 +96,7 @@ public class StepTest {
         ScenarioContextImpl scenarioContext = new ScenarioContextImpl();
 
         // When
-        step.execute(ScenarioExecution.createScenarioExecution(), scenarioContext);
+        step.execute(ScenarioExecution.createScenarioExecution(null), scenarioContext);
 
         // Then
         StepContext context = (StepContext) ReflectionTestUtils.getField(step, "stepContext");
@@ -105,12 +105,12 @@ public class StepTest {
     }
 
     @Test
-    public void should_have_success_validations_of_step_store_in_step_result() {
+    public void validations_should_inform_ok_ko_in_step_result() {
         // Given
         StepExecutor stepExecutor = mock(StepExecutor.class);
 
         Map<String, Object> validations = new HashMap<>();
-        validations.put("first assert", "${true}");
+        validations.put("first assert", "${false}");
         validations.put("second assert", "${true}");
 
         StepDefinition fakeStepDefinition = new StepDefinition("fakeScenario", fakeTarget, "taskType", null, null, null, null, validations, environment);
@@ -118,40 +118,34 @@ public class StepTest {
         ScenarioContextImpl scenarioContext = new ScenarioContextImpl();
 
         // When
-        step.execute(ScenarioExecution.createScenarioExecution(), scenarioContext);
+        step.execute(ScenarioExecution.createScenarioExecution(null), scenarioContext);
 
         // Then
-        assertThat(step.status()).isEqualTo(Status.SUCCESS);
         StepState state = (StepState) ReflectionTestUtils.getField(step, "state");
-        assertThat(state.errors().size()).isEqualTo(0);
-        assertThat(state.informations().size()).isEqualTo(2);
-        assertThat(state.informations().get(0)).isEqualTo("Validation [first assert] : OK");
-        assertThat(state.informations().get(1)).isEqualTo("Validation [second assert] : OK");
+        assertThat(state.errors().size()).isEqualTo(1);
+        assertThat(state.informations().size()).isEqualTo(1);
+        assertThat(state.errors().get(0)).isEqualTo("Validation [first assert] : KO (${false})");
+        assertThat(state.informations().get(0)).isEqualTo("Validation [second assert] : OK");
     }
 
     @Test
-    public void should_have_failed_validations_of_step_store_in_step_result() {
+    public void validations_should_set_failure_state() {
         // Given
         StepExecutor stepExecutor = mock(StepExecutor.class);
 
         Map<String, Object> validations = new HashMap<>();
-        validations.put("first assert", "${true}");
-        validations.put("second assert", "${false}");
+        validations.put("first assert", "${false}");
+        validations.put("second assert", "${true}");
 
         StepDefinition fakeStepDefinition = new StepDefinition("fakeScenario", fakeTarget, "taskType", null, null, null, null, validations, environment);
         Step step = new Step(dataEvaluator, fakeStepDefinition, Optional.empty(), stepExecutor, Lists.emptyList());
         ScenarioContextImpl scenarioContext = new ScenarioContextImpl();
 
         // When
-        step.execute(ScenarioExecution.createScenarioExecution(), scenarioContext);
+        step.execute(ScenarioExecution.createScenarioExecution(null), scenarioContext);
 
         // Then
         assertThat(step.status()).isEqualTo(Status.FAILURE);
-        StepState state = (StepState) ReflectionTestUtils.getField(step, "state");
-        assertThat(state.errors().size()).isEqualTo(1);
-        assertThat(state.informations().size()).isEqualTo(1);
-        assertThat(state.informations().get(0)).isEqualTo("Validation [first assert] : OK");
-        assertThat(state.errors().get(0)).isEqualTo("Validation [second assert] : KO (${false})");
     }
 
     @Test
@@ -181,7 +175,7 @@ public class StepTest {
         ScenarioContextImpl scenarioContext = new ScenarioContextImpl();
 
         // When
-        step.execute(ScenarioExecution.createScenarioExecution(), scenarioContext);
+        step.execute(ScenarioExecution.createScenarioExecution(null), scenarioContext);
 
         // Then
         StepContext context = (StepContext) ReflectionTestUtils.getField(step, "stepContext");
@@ -222,7 +216,7 @@ public class StepTest {
         ScenarioContextImpl scenarioContext = new ScenarioContextImpl();
 
         // When
-        step.execute(ScenarioExecution.createScenarioExecution(), scenarioContext);
+        step.execute(ScenarioExecution.createScenarioExecution(null), scenarioContext);
 
         // Then
         StepContext context = (StepContext) ReflectionTestUtils.getField(step, "stepContext");
@@ -247,7 +241,7 @@ public class StepTest {
         Step step = new Step(dataEvaluator, fakeStepDefinition, Optional.of(fakeTarget), mock(StepExecutor.class), Lists.emptyList());
 
         // When
-        step.execute(ScenarioExecution.createScenarioExecution(), new ScenarioContextImpl());
+        step.execute(ScenarioExecution.createScenarioExecution(null), new ScenarioContextImpl());
 
         // Then
         StepContext context = (StepContext) ReflectionTestUtils.getField(step, "stepContext");
@@ -326,7 +320,7 @@ public class StepTest {
         ScenarioContextImpl scenarioContext = new ScenarioContextImpl();
 
         // When
-        return step.execute(ScenarioExecution.createScenarioExecution(), scenarioContext);
+        return step.execute(ScenarioExecution.createScenarioExecution(null), scenarioContext);
     }
 
     private Step buildEmptyStep(StepExecutor stepExecutor) {

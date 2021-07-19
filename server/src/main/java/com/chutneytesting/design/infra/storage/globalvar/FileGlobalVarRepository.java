@@ -1,7 +1,15 @@
 package com.chutneytesting.design.infra.storage.globalvar;
 
+import static com.chutneytesting.ServerConfiguration.CONFIGURATION_FOLDER_SPRING_VALUE;
 import static com.chutneytesting.tools.file.FileUtils.initFolder;
 
+import com.chutneytesting.design.domain.globalvar.GlobalvarRepository;
+import com.chutneytesting.tools.ZipUtils;
+import com.chutneytesting.tools.file.FileUtils;
+import com.chutneytesting.design.domain.globalvar.GlobalVarNotFoundException;
+import com.chutneytesting.design.domain.globalvar.GlobalvarRepository;
+import com.chutneytesting.tools.ZipUtils;
+import com.chutneytesting.tools.file.FileUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,13 +17,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
-import com.chutneytesting.design.domain.globalvar.GlobalvarRepository;
-import com.chutneytesting.tools.ZipUtils;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
@@ -27,7 +34,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 import org.hjson.JsonValue;
-import com.chutneytesting.tools.file.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +51,7 @@ public class FileGlobalVarRepository implements GlobalvarRepository {
         .enable(SerializationFeature.INDENT_OUTPUT)
         .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
-    FileGlobalVarRepository(@Value("${configuration-folder:conf}") String storeFolderPath) throws UncheckedIOException {
+    FileGlobalVarRepository(@Value(CONFIGURATION_FOLDER_SPRING_VALUE) String storeFolderPath) throws UncheckedIOException {
         this.storeFolderPath = Paths.get(storeFolderPath).resolve(ROOT_DIRECTORY_NAME);
         initFolder(this.storeFolderPath);
     }
@@ -65,6 +71,8 @@ public class FileGlobalVarRepository implements GlobalvarRepository {
         Path filePath = this.storeFolderPath.resolve(fileName + FILE_EXTENSION);
         try {
             return new String(Files.readAllBytes(filePath));
+        } catch (NoSuchFileException nsfe) {
+            throw new GlobalVarNotFoundException(fileName);
         } catch (IOException e) {
             throw new UnsupportedOperationException("Cannot read " + filePath.toUri().toString(), e);
         }
@@ -96,6 +104,8 @@ public class FileGlobalVarRepository implements GlobalvarRepository {
         Path filePath = this.storeFolderPath.resolve(fileName + FILE_EXTENSION);
         try {
             Files.delete(filePath);
+        } catch (NoSuchFileException nsfe) {
+            throw new GlobalVarNotFoundException(fileName);
         } catch (IOException e) {
             throw new UnsupportedOperationException("Cannot delete " + filePath.toUri().toString(), e);
         }

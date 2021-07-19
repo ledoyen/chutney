@@ -3,11 +3,12 @@ package com.chutneytesting.design.infra.storage.campaign;
 import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 
-import com.google.common.collect.ImmutableMap;
 import com.chutneytesting.design.domain.campaign.Campaign;
 import com.chutneytesting.design.domain.campaign.CampaignExecutionReport;
 import com.chutneytesting.design.domain.campaign.CampaignNotFoundException;
 import com.chutneytesting.design.domain.campaign.CampaignRepository;
+import com.chutneytesting.design.infra.storage.scenario.jdbc.TagListMapper;
+import com.google.common.collect.ImmutableMap;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalTime;
@@ -68,7 +69,7 @@ public class DatabaseCampaignRepository implements CampaignRepository {
      * Remove a campaign from its id.
      *
      * @param id The campaign id to remove.
-     * @return <tt>true</tt> if, and only if, the campaign has been removed.
+     * @return <code>true</code> if, and only if, the campaign has been removed.
      */
     @Override
     public boolean removeById(Long id) {
@@ -97,7 +98,19 @@ public class DatabaseCampaignRepository implements CampaignRepository {
         Map<String, String> parameters = campaignParameterRepository.findCampaignParameters(campaign.id).stream()
             .collect(Collectors.toMap(cp -> cp.parameter, cp -> cp.value));
 
-        return new Campaign(campaign.id, campaign.title, campaign.description, campaign.scenarioIds, parameters, campaign.getScheduleTime(), campaign.executionEnvironment(), campaign.parallelRun, campaign.retryAuto, campaign.externalDatasetId);
+        return new Campaign(
+            campaign.id,
+            campaign.title,
+            campaign.description,
+            campaign.scenarioIds,
+            parameters,
+            campaign.getScheduleTime(),
+            campaign.executionEnvironment(),
+            campaign.parallelRun,
+            campaign.retryAuto,
+            campaign.externalDatasetId,
+            campaign.tags
+        );
     }
 
     @Override
@@ -152,7 +165,8 @@ public class DatabaseCampaignRepository implements CampaignRepository {
                 "ENVIRONMENT = :environment, " +
                 "PARALLEL_RUN = :paralellRun, " +
                 "RETRY_AUTO = :retryAuto, " +
-                "DATASET_ID = :datasetId " +
+                "DATASET_ID = :datasetId, " +
+                "TAGS = :tags " +
                 "WHERE ID = :id"
             , map(Pair.of("id", campaign.id)
                 , Pair.of("title", campaign.title)
@@ -162,6 +176,7 @@ public class DatabaseCampaignRepository implements CampaignRepository {
                 , Pair.of("paralellRun", campaign.parallelRun)
                 , Pair.of("retryAuto", campaign.retryAuto)
                 , Pair.of("datasetId", campaign.externalDatasetId)
+                , Pair.of("tags", TagListMapper.tagsListToString(campaign.tags))
             ));
 
         updateScenarioReferences(campaign.id, campaign.scenarioIds);
@@ -173,8 +188,8 @@ public class DatabaseCampaignRepository implements CampaignRepository {
     private Long doSave(final Campaign unsavedCampaign) {
         final Long id = uiNamedParameterJdbcTemplate.queryForObject("SELECT nextval('CAMPAIGN_SEQ')", emptyMap(), Long.class);
 
-        uiNamedParameterJdbcTemplate.update("INSERT INTO CAMPAIGN(ID, TITLE, DESCRIPTION, SCHEDULE_TIME, ENVIRONMENT, PARALLEL_RUN, RETRY_AUTO, DATASET_ID) " +
-                "VALUES (:id, :title, :description, :scheduletime, :environment, :paralellRun, :retryAuto, :datasetId)"
+        uiNamedParameterJdbcTemplate.update("INSERT INTO CAMPAIGN(ID, TITLE, DESCRIPTION, SCHEDULE_TIME, ENVIRONMENT, PARALLEL_RUN, RETRY_AUTO, DATASET_ID, TAGS) " +
+                "VALUES (:id, :title, :description, :scheduletime, :environment, :paralellRun, :retryAuto, :datasetId, :tags)"
             , map(Pair.of("id", id)
                 , Pair.of("title", unsavedCampaign.title)
                 , Pair.of("description", ofNullable(unsavedCampaign.description).orElse(""))
@@ -183,6 +198,7 @@ public class DatabaseCampaignRepository implements CampaignRepository {
                 , Pair.of("paralellRun", unsavedCampaign.parallelRun)
                 , Pair.of("retryAuto", unsavedCampaign.retryAuto)
                 , Pair.of("datasetId", unsavedCampaign.externalDatasetId)
+                , Pair.of("tags", TagListMapper.tagsListToString(unsavedCampaign.tags))
             ));
 
         updateScenarioReferences(id, unsavedCampaign.scenarioIds);
@@ -194,15 +210,13 @@ public class DatabaseCampaignRepository implements CampaignRepository {
     private void updateScenarioReferences(Long campaignId, List<String> scenarioId) {
         clearAllAssociationToScenario(campaignId);
         final AtomicInteger index = new AtomicInteger(0);
-        scenarioId.forEach(id -> {
-            uiNamedParameterJdbcTemplate
-                .update("INSERT INTO CAMPAIGN_SCENARIOS(CAMPAIGN_ID, SCENARIO_ID, INDEX) VALUES (:campaignId, :scenarioId, :index)"
-                    , map(Pair.of("campaignId", campaignId)
-                        , Pair.of("scenarioId", id)
-                        , Pair.of("index", index.incrementAndGet())
-                    )
-                );
-        });
+        scenarioId.forEach(id -> uiNamedParameterJdbcTemplate
+            .update("INSERT INTO CAMPAIGN_SCENARIOS(CAMPAIGN_ID, SCENARIO_ID, INDEX) VALUES (:campaignId, :scenarioId, :index)"
+                , map(Pair.of("campaignId", campaignId)
+                    , Pair.of("scenarioId", id)
+                    , Pair.of("index", index.incrementAndGet())
+                )
+            ));
     }
 
     private boolean isCampaignExists(Long campaignId) {
@@ -270,7 +284,8 @@ public class DatabaseCampaignRepository implements CampaignRepository {
             boolean parallelRun = rs.getBoolean("PARALLEL_RUN");
             boolean retryAuto = rs.getBoolean("RETRY_AUTO");
             LocalTime localTime = scheduleTimeAsString != null ? LocalTime.parse(scheduleTimeAsString, Campaign.formatter) : null;
-            return new Campaign(id, title, description, null, null, localTime, environment, parallelRun, retryAuto, datasetId);
+            List<String> tags = TagListMapper.tagsStringToList(rs.getString("TAGS"));
+            return new Campaign(id, title, description, null, null, localTime, environment, parallelRun, retryAuto, datasetId, tags);
         }
     }
 }

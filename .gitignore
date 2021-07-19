@@ -1,16 +1,7 @@
 # Chutney files
-/conf/
-/git-conf/
 .chutney/
-server/conf/
-/backups
 .env/
 /ui/coverage
-
-######################
-# Chutney persistence dir
-######################
-.chutney/
 
 ######################
 # Project Specific
@@ -44,6 +35,11 @@ npm-debug.log.*
 # SASS
 ######################
 .sass-cache/
+
+######################
+# JQWIK
+######################
+.jqwik-database
 
 ######################
 # Eclipse

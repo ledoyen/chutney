@@ -3,6 +3,7 @@ package com.chutneytesting.task.api;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,18 +19,20 @@ public class TaskController {
 
     static final String BASE_URL = "/api/task/v1";
 
-    private EmbeddedTaskEngine embeddedTaskEngine;
+    private final EmbeddedTaskEngine embeddedTaskEngine;
 
     public TaskController(EmbeddedTaskEngine embeddedTaskEngine) {
         this.embeddedTaskEngine = embeddedTaskEngine;
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('COMPONENT_READ')")
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TaskDto> allTasks() {
         return embeddedTaskEngine.getAllTasks();
     }
 
-    @GetMapping(path = "/{taskId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAuthority('COMPONENT_READ')")
+    @GetMapping(path = "/{taskId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public TaskDto byTaskId(@PathVariable String taskId) {
         return embeddedTaskEngine.getTask(taskId).orElseThrow(TaskNotFoundException::new);
     }

@@ -12,8 +12,8 @@ import com.chutneytesting.design.api.scenario.v2_0.dto.RawTestCaseDto;
 import com.chutneytesting.design.domain.scenario.ScenarioNotParsableException;
 import com.chutneytesting.design.domain.scenario.TestCaseRepository;
 import com.chutneytesting.design.domain.scenario.gwt.GwtTestCase;
-import com.chutneytesting.security.domain.User;
-import com.chutneytesting.security.domain.UserService;
+import com.chutneytesting.security.api.UserDto;
+import com.chutneytesting.security.infra.SpringUserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,12 +38,14 @@ public class TestCaseControllerTest {
         .build();
 
     private MockMvc mockMvc;
-    private TestCaseRepository testCaseRepository = mock(TestCaseRepository.class);
-    private UserService userService = mock(UserService.class);
+    private final TestCaseRepository testCaseRepository = mock(TestCaseRepository.class);
+    private final SpringUserService userService = mock(SpringUserService.class);
+    private final UserDto currentUser = new UserDto();
 
     @BeforeEach
     public void setUp() {
-        when(userService.getCurrentUser()).thenReturn(User.ANONYMOUS_USER);
+        currentUser.setId("currentUser");
+        when(userService.currentUser()).thenReturn(currentUser);
 
         GwtTestCaseController testCaseController = new GwtTestCaseController(testCaseRepository, null, userService);
         mockMvc = MockMvcBuilders.standaloneSetup(testCaseController)
@@ -60,7 +62,7 @@ public class TestCaseControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/api/scenario/v2/raw")
                 .content(om.writeValueAsString(SAMPLE_SCENARIO))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(result -> bodyHolder.set(result.getResponse().getContentAsString()))
             .andExpect(MockMvcResultMatchers.status().isOk());
@@ -77,7 +79,7 @@ public class TestCaseControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/api/scenario/v2/raw")
                 .content(om.writeValueAsString(SAMPLE_SCENARIO))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
         )
 //            .andDo(print())
             .andDo(result -> bodyHolder.set(result.getResponse().getContentAsString()))
@@ -93,7 +95,7 @@ public class TestCaseControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/api/scenario/v2/raw")
                 .content(om.writeValueAsString(SAMPLE_SCENARIO))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(result -> resultContentLength.set(result.getResponse().getContentLength()))
             .andExpect(status().isForbidden());
@@ -111,7 +113,7 @@ public class TestCaseControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/api/scenario/v2/raw")
                 .content(om.writeValueAsString(SAMPLE_SCENARIO))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(result -> message[0] = result.getResponse().getContentAsString())
             .andExpect(status().isUnprocessableEntity());
@@ -129,7 +131,7 @@ public class TestCaseControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/api/scenario/v2/raw")
                 .content(om.writeValueAsString(SAMPLE_SCENARIO))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
         )
 //            .andDo(print())
             .andDo(result -> bodyHolder.set(result.getResponse().getContentAsString()))

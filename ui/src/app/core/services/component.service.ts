@@ -13,7 +13,7 @@ import {
     ScenarioComponent,
     Strategy,
     Task
-} from '@core/model';
+} from '@model';
 
 @Injectable({
     providedIn: 'root'
@@ -54,7 +54,7 @@ export class ComponentService {
     findAllComponent(): Observable<Array<ComponentTask>> {
         return this.httpClient.get<Array<ComponentTask>>(environment.backend + this.stepUrl + '/all')
             .pipe(map((res: Array<ComponentTask>) => {
-                return res.map(c => this.mapToComponentTask(c));
+                return res.map(c => this.mapToComponentTask(c, true));
             }));
     }
 
@@ -67,14 +67,15 @@ export class ComponentService {
 
     delete(id: string): Observable<void> {
         return this.httpClient.delete(environment.backend + this.stepUrl + `/${id}`)
-            .pipe(map(() => {}));
+            .pipe(map(() => {
+            }));
     }
 
     execute(component: ComponentTask, env: string): Observable<Object> {
         return this.httpClient.post(environment.backend + `${this.stepExecutionUrl}/${component.id}/${env}`, '')
-        .pipe(map((res: Object) => {
-            return res;
-        }));
+            .pipe(map((res: Object) => {
+                return res;
+            }));
     }
 
     saveComponentTestCase(scenarioComponent: ScenarioComponent): Observable<any> {
@@ -86,13 +87,24 @@ export class ComponentService {
 
     findComponentTestCase(id: string): Observable<ScenarioComponent> {
         return this.httpClient.get<ScenarioComponent>(environment.backend + `${this.componentUrl}/${id}`).pipe(
-            map(value => this.mapJsonToScenarioComponent(value))
+            map(value => this.mapJsonToScenarioComponent(value, true))
+        );
+    }
+
+    findComponentTestCaseExecutableParameters(id: string): Observable<Array<KeyValue>> {
+        return this.httpClient.get<Array<KeyValue>>(environment.backend + `${this.componentUrl}/${id}/executable/parameters`);
+    }
+
+    findComponentTestCaseWithoutDeserializeImpl(id: string): Observable<ScenarioComponent> {
+        return this.httpClient.get<ScenarioComponent>(environment.backend + `${this.componentUrl}/${id}/executable`).pipe(
+            map(value => this.mapJsonToScenarioComponent(value, false))
         );
     }
 
     deleteComponentTestCase(id: string): Observable<void> {
         return this.httpClient.delete(environment.backend + `${this.componentUrl}/${id}`)
-            .pipe(map(() => {}));
+            .pipe(map(() => {
+            }));
     }
 
     findParents(id: string): Observable<any> {
@@ -129,7 +141,7 @@ export class ComponentService {
             componentTask.computedParameters);
     }
 
-    private mapJsonToScenarioComponent(jsonObject: any): ScenarioComponent {
+    private mapJsonToScenarioComponent(jsonObject: any, withDeserializeImplementation: boolean): ScenarioComponent {
         return new ScenarioComponent(
             jsonObject.id,
             jsonObject.title,
@@ -138,7 +150,7 @@ export class ComponentService {
             jsonObject.updateDate,
             jsonObject.version,
             jsonObject.author,
-            jsonObject.scenario.componentSteps.map((json: any) => this.mapToComponentTask(json)),
+            jsonObject.scenario.componentSteps.map((json: any) => this.mapToComponentTask(json, withDeserializeImplementation)),
             jsonObject.scenario.parameters.map(elt => new KeyValue(elt.key, elt.value)),
             jsonObject.computedParameters.map(elt => new KeyValue(elt.key, elt.value)),
             jsonObject.tags,
@@ -146,17 +158,24 @@ export class ComponentService {
         );
     }
 
-    private mapToComponentTask(jsonObject: any): ComponentTask {
+    private mapToComponentTask(jsonObject: any, withDeserializeImplementation: boolean): ComponentTask {
+        let impl = Implementation.deserialize(JSON.parse(jsonObject.task));
+
+        if (jsonObject.task && !withDeserializeImplementation) {
+            impl =  JSON.parse(jsonObject.task);
+        }
+
         return new ComponentTask(
             jsonObject.name,
-            Implementation.deserialize(JSON.parse(jsonObject.task)),
-            jsonObject.steps.map(c => this.mapToComponentTask(c)),
+            impl,
+            jsonObject.steps.map(c => this.mapToComponentTask(c, withDeserializeImplementation)),
             jsonObject.parameters.map(elt => new KeyValue(elt.key, elt.value)),
             jsonObject.computedParameters.map(elt => new KeyValue(elt.key, elt.value)),
             jsonObject.tags,
             jsonObject.strategy != null ? new Strategy(jsonObject.strategy.type, jsonObject.strategy.parameters) : null,
             jsonObject.id
         );
+
     }
 
     private mapToComponentTaskDto(component: ComponentTask): ComponentTaskDto {

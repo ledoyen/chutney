@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.chutneytesting</groupId>
         <artifactId>chutney-parent</artifactId>
-        <version>1.3.1-SNAPSHOT</version>
+        <version>NO_VERSION</version>
     </parent>
 
     <artifactId>task-impl</artifactId>
@@ -142,6 +142,10 @@
                 <exclusion>
                     <groupId>junit</groupId>
                     <artifactId>junit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

@@ -1,13 +1,12 @@
-///<reference path="../../../../../../node_modules/@angular/router/src/router.d.ts"/>
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { debounceTime, delay } from 'rxjs/internal/operators';
+import { debounceTime, delay, tap } from 'rxjs/internal/operators';
 
 import { EventManagerService } from '@shared/event-manager.service';
 
-import { Execution, GwtTestCase, ScenarioComponent, ScenarioExecutionReport, TestCase } from '@model';
+import { Execution, GwtTestCase, ScenarioComponent, ScenarioExecutionReport, TestCase, Authorization } from '@model';
 import { ComponentService, ScenarioExecutionService, ScenarioService } from '@core/services';
 
 @Component({
@@ -18,9 +17,8 @@ import { ComponentService, ScenarioExecutionService, ScenarioService } from '@co
 })
 export class ScenarioExecutionComponent implements OnInit, OnDestroy {
 
-    testCase: TestCase = null;
-    scenarioComponent: ScenarioComponent = null;
-    scenarioGwt: GwtTestCase = null;
+    scenarioComponent$: Observable<ScenarioComponent> = null;
+    scenarioGwt$: Observable<GwtTestCase> = null;
 
     parseError: String;
     executionError: String;
@@ -34,10 +32,13 @@ export class ScenarioExecutionComponent implements OnInit, OnDestroy {
     toggleScenarioDetails = true;
     toggleScenarioInfo = true;
 
-    isComposed = TestCase.isComposed;
+    private isComposed = TestCase.isComposed;
+    private hasParameters: boolean = null;
 
     private routeParamsSubscription: Subscription;
     private scenarioExecutionAsyncSubscription: Subscription;
+
+    Authorization = Authorization;
 
     constructor(
         private eventManager: EventManagerService,
@@ -51,14 +52,13 @@ export class ScenarioExecutionComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        const action: string = this.route.snapshot.queryParams['action'];
         this.routeParamsSubscription = this.route.params.subscribe((params) => {
             this.currentScenarioId = params['id'];
             if (params['execId'] && params['execId'] !== 'last') {
                 this.loadScenarioExecution(params['execId']);
             }
 
-            this.loadScenario(action);
+            this.loadScenario();
         });
     }
 
@@ -67,19 +67,21 @@ export class ScenarioExecutionComponent implements OnInit, OnDestroy {
         this.unsubscribeScenarioExecutionAsyncSubscription();
     }
 
-    loadScenario(action: string = '') {
+    loadScenario() {
         if (this.isComposed(this.currentScenarioId)) {
-            this.componentService.findComponentTestCase(this.currentScenarioId).subscribe((testCase: ScenarioComponent) => {
-                this.testCase = TestCase.fromComponent(testCase);
-                this.scenarioComponent = testCase;
-            });
+            this.scenarioComponent$ = this.componentService
+                .findComponentTestCaseWithoutDeserializeImpl(this.currentScenarioId).pipe(
+                    tap(sc => {
+                        this.hasParameters = (sc.computedParameters && sc.computedParameters.length > 0);
+                    })
+                );
         } else {
-            this.scenarioService.findRawTestCase(this.currentScenarioId).subscribe((testCase: TestCase) => {
-                this.testCase = testCase;
-            });
-            this.scenarioService.findTestCase(this.currentScenarioId).subscribe((testCase: GwtTestCase) => {
-                this.scenarioGwt = testCase;
-            });
+            this.scenarioGwt$ = this.scenarioService
+                .findTestCase(this.currentScenarioId).pipe(
+                     tap(gwt => {
+                        this.hasParameters = (gwt.wrappedParams.params && gwt.wrappedParams.params.length > 0);
+                    })
+                 );
         }
     }
 
@@ -103,7 +105,7 @@ export class ScenarioExecutionComponent implements OnInit, OnDestroy {
     }
 
     onSelectExecution(execution: Execution) {
-        if (execution !== null) {
+        if (execution != null) {
             this.currentExecutionId = execution.executionId;
             this.executionError = '';
 
@@ -144,8 +146,7 @@ export class ScenarioExecutionComponent implements OnInit, OnDestroy {
     }
 
     executeScenario(env: string) {
-        if (this.testCase.hasParameters()) {
-            this.scenarioExecutionService.testCaseToExecute = this.testCase;
+        if (this.hasParameters) {
             this.router.navigateByUrl(`/scenario/${this.currentScenarioId}/execute/${env}`)
                 .then(null);
         } else {

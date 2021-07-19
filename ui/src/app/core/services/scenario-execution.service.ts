@@ -11,8 +11,6 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ScenarioExecutionService {
 
-    public testCaseToExecute: TestCase;
-
     private resourceUrl = '/api/ui/scenario';
 
     constructor(private http: HttpClient) {
@@ -44,7 +42,7 @@ export class ScenarioExecutionService {
     findExecutionReport(scenarioId: string, executionId: number): Observable<ScenarioExecutionReport> {
         return this.http.get<ScenarioExecutionReport>(environment.backend + `${this.resourceUrl}/${scenarioId}/execution/${executionId}/v1`)
             .pipe(map((res: Object) => {
-                if (res !== null && res !== '') {
+                if (res != null && res !== '') {
                     return this.buildExecutionReport(res);
                 }
             }));

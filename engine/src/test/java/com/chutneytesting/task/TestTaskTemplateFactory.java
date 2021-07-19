@@ -83,14 +83,14 @@ public abstract class TestTaskTemplateFactory {
         }
     }
 
-    public static class ComplexeTask implements Task {
+    public static class ComplexTask implements Task {
 
         private final String someString;
         private final Pojo someObject;
 
-        public ComplexeTask(@Input("stringParam") String someString, @Input("pojoParam") Pojo someObject) {
-           this.someString = someString;
-           this.someObject = someObject;
+        public ComplexTask(@Input("stringParam") String someString, @Input("pojoParam") Pojo someObject) {
+            this.someString = someString;
+            this.someObject = someObject;
         }
 
         @Override
@@ -169,7 +169,7 @@ public abstract class TestTaskTemplateFactory {
         public final String param1;
         public final String param2;
 
-        public Pojo(@Input("param1") String param1, @Input("param2")String param2) {
+        public Pojo(@Input("param1") String param1, @Input("param2") String param2) {
             this.param1 = param1;
             this.param2 = param2;
         }

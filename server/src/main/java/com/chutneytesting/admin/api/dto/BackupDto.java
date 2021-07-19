@@ -1,52 +1,58 @@
 package com.chutneytesting.admin.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 public class BackupDto {
 
     private final LocalDateTime time;
-    private final Boolean homePage;
-    private final Boolean agentsNetwork;
-    private final Boolean environments;
-    private final Boolean components;
-    private final Boolean globalVars;
+    private final boolean homePage;
+    private final boolean agentsNetwork;
+    private final boolean environments;
+    private final boolean components;
+    private final boolean globalVars;
+    private final boolean jiraLinks;
 
-    public BackupDto(@JsonProperty("time") LocalDateTime time,
-                     @JsonProperty("homePage") Boolean homePage,
-                     @JsonProperty("agentsNetwork") Boolean agentsNetwork,
-                     @JsonProperty("environments") Boolean environments,
-                     @JsonProperty("components") Boolean components,
-                     @JsonProperty("globalVars") Boolean globalVars) {
+    public BackupDto(LocalDateTime time,
+                     boolean homePage,
+                     boolean agentsNetwork,
+                     boolean environments,
+                     boolean components,
+                     boolean globalVars,
+                     boolean jiraLinks) {
         this.time = time;
         this.homePage = homePage;
         this.agentsNetwork = agentsNetwork;
         this.environments = environments;
         this.components = components;
         this.globalVars = globalVars;
+        this.jiraLinks = jiraLinks;
     }
 
     public LocalDateTime getTime() {
         return time;
     }
 
-    public Boolean getHomePage() {
+    public boolean getHomePage() {
         return homePage;
     }
 
-    public Boolean getAgentsNetwork() {
+    public boolean getAgentsNetwork() {
         return agentsNetwork;
     }
 
-    public Boolean getEnvironments() {
+    public boolean getEnvironments() {
         return environments;
     }
 
-    public Boolean getComponents() {
+    public boolean getComponents() {
         return components;
     }
 
-    public Boolean getGlobalVars() {
+    public boolean getGlobalVars() {
         return globalVars;
+    }
+
+    public boolean getJiraLinks() {
+        return jiraLinks;
     }
 }
